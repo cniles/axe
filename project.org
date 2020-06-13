@@ -1,0 +1,24 @@
+* aws-el project TODOs
+TODO list for aws-el broken up by capability.
+** Lambda
+*** TODO Invoke lambda by name and show output in a single buffer.
+** Logs
+*** TODO Stop tailing after time limit (be polite)
+** API Gateway
+** IAM
+*** TODO List users
+*** TODO List roles
+*** TODO List policies
+*** TODO Crate role
+*** TODO Upload policy
+** Route 53
+** SNS
+*** TODO List topics
+*** TODO Publish message
+** SQS
+*** TODO List queues
+** S3
+*** TODO Download & show files
+*** TODO List objects in S3 bucket names with periods
+** API Signature
+*** TODO Support HTTP/2 canonical headers. Need to include :authority header  rather than host
