@@ -24,7 +24,7 @@ parameter."
    (format "%s.s3.amazonaws.com" bucket) 's3
    (transformed-invoker success 'parse-xml-string)
    "GET"
-   :query-params (rassq-edlete-all nil `(("list-type" . "2")
+   :query-params (rassq-delete-all nil `(("list-type" . "2")
 					 ("continuation-token" . ,next-token)))
    :headers (list (cons "x-amz-content-sha256" (aws-api-sigv4-hash "")))))
 
