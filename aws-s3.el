@@ -44,6 +44,7 @@ parameter."
 			'font-lock-face 'underline 'content content))
     (newline)))
 
+;;;###autoload
 (defun aws-s3-list-buckets ()
   "Lists buckets for the account into a buffer."
   (interactive)
@@ -58,12 +59,14 @@ parameter."
    'aws-s3--insert-bucket
    ()))
 
+;;;###autoload
 (defun aws-s3-list-objects-in-bucket-at-point ()
     "List contents of bucket described at from text property or text."
     (interactive)
     (let ((bucket (thing-or-property-at-point 'bucket 'Name)))
       (aws-s3-list-objects-v2 bucket)))
 
+;;;###autoload
 (defun aws-s3-list-objects-v2 (bucket)
   "List objects in BUCKET into a buffer."
   (interactive "sBucket: ")

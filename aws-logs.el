@@ -76,6 +76,7 @@ can be specified nil to omit."
 
 ;;; List buffers
 
+;;;###autoload
 (defun aws-logs-describe-log-groups (prefix)
   "Opens a new buffer and displays all log groups.
 If PREFIX is not nil, it is used to filter by log group name
@@ -98,6 +99,7 @@ displayed."
      :auto-follow t
      :auto-follow-delay 0.1)))
 
+;;;###autoload
 (cl-defun aws-logs-get-log-events (log-group-name log-stream-name &key auto-follow (auto-follow-delay 5.0))
   "Display log events for stream with name LOG-STREAM-NAME in log group LOG-GROUP-NAME.
 Specifying FOLLOW-NEXT as non-nil will start the buffer in follow
@@ -122,6 +124,7 @@ sLog Stream Name: ")
   (let ((log-group (get-text-property (point) 'log-group)))
     (if (null log-group) (thing-at-point 'symbol) (alist-get 'logGroupName log-group))))
 
+;;;###autoload
 (defun aws-logs--latest-log-stream-at-point ()
   "Open the log stream defined at the current  point.
 First checks for text property log-group otherwise uses the text
