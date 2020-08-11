@@ -75,12 +75,12 @@ PARAMS."
     (let ((next-token (if (functionp next-token-fn) (funcall next-token-fn response))))
       (funcall
        success response
-       (lambda ()
-	 (if (not (null next-token))
+       (if (not (null next-token))
+	   (lambda ()
 	     (apply api-fn
 		    (make-next-handler success api-fn params next-token-fn)
-		    (append params (list :next-token next-token)))
-	   nil))))))
+		    (append params (list :next-token next-token)))))))))
+
 
 (defun thing-or-property-at-point (prop key)
   "Get the value for KEY of text property PROP or symbol at point."
