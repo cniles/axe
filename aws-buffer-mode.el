@@ -4,6 +4,14 @@
 
 (require 'aws-util)
 
+(defvar aws-buffer-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "n") 'aws-buffer-follow-next)
+    (define-key map (kbd "N") 'aws-buffer-auto-follow)
+    (define-key map (kbd "s") 'aws-buffer-stop-auto-follow)
+    map)
+  "AWS Interactive Buffer key map.")
+
 (define-derived-mode aws-buffer-mode special-mode "AWS Interactive Buffer"
   "AWS Interactive Buffer")
 
@@ -20,19 +28,14 @@ Will be nil if AWS-BUFFER-AUTO-FOLLOW is enabled.")
 (defvar-local aws-buffer-auto-follow-delay nil
   "Variable setting the delay (in seconds) between AWS API requests when auto-following.")
 
-(defvar aws-buffer-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "n") 'aws-buffer-follow-next)
-    (define-key map (kbd "N") 'aws-buffer-auto-follow)
-    (define-key map (kbd "s") 'aws-buffer-stop-auto-follow)
-    map))
-
 (defun aws-buffer-follow-next ()
   "Call aws-buffer-next-fn for current buffer."
   (interactive)
   (if (not (functionp aws-buffer-next-fn))
       (message "Cannot follow without next function")
-    (funcall aws-buffer-next-fn)))
+    (let ((func aws-buffer-next-fn))
+      (setq aws-buffer-next-fn ())
+      (funcall func))))
 
 (cl-defun aws-buffer-auto-follow (&optional (delay 5.0))
   "Enables auto-follow in the current buffer."
