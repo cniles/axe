@@ -61,7 +61,6 @@ See `https://docs.aws.amazon.com/lambda/latest/dg/API_ListFunctions.html'."
 (cl-defun axe-lambda--insert-function (fun)
   "Insert the details of lambda function FUN into the current buffer."
   (let ((inhibit-read-only t))
-    (aws-sdk-log fun)
     (insert (propertize (format "%-15s" (file-size-human-readable (alist-get 'CodeSize fun))) 'function fun 'font-lock-face 'shadow))
     (insert (propertize (format "%s" (alist-get 'FunctionName fun)) 'function fun 'font-lock-face 'underline))
     (newline)))
