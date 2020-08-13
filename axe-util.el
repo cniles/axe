@@ -1,7 +1,47 @@
-;;; aws-util  --- Utility functions -*- lexical-binding: t -*-
+;;; axe-util  --- Utility functions -*- lexical-binding: t -*-
 ;;; Commentary:
 ;;; Code:
 (require 'json)
+(eval-when-compile (require 'cl))
+
+(defvar axe-aws-credential-file
+  (let ((home (getenv (cond ((eql system-type 'windows-nt) "USERPROFILE")
+			    (t "HOME")))))
+    (expand-file-name "credentials" (expand-file-name ".aws" home)))
+  "Path the .aws/credentials file.")
+
+(defun axe--match-profile-line (line)
+  "Return profile name if LINE is a profile line."
+  (nth 1 (s-match "^\s*\\[\s*\\([a-zA-Z0-9-_]+\\)\s*]\s*$" line)))
+
+(defun axe--match-key-value-line (line)
+  "Return cons of key value pair if LINE is a key/value line."
+  (let ((match (cdr (s-match "^\s*\\([^[:blank:]]+\\)\s*=\s*\\([^[:blank:]]+\\)\s*$" line))))
+    (cons (car match) (nth 1 match))))
+
+(defun axe--parse-credential-file ()
+  "Read the contentds of the AWS crednetial file.
+
+Returns an alist of profile names mapped to their key and
+secret."
+  (let ((props ())
+	(profile ())
+	(res ()))
+    (dolist (line (with-temp-buffer
+		    (insert-file-contents axe-aws-credential-file)
+		    (split-string (buffer-string) "\n" t)))
+      (let ((profile-line (axe--match-profile-line line))
+	    (key-value-line (axe--match-key-value-line line)))
+	(cond (profile-line
+	       (axe-log "Pushing profile")
+	       (push (cons profile props) res)
+	       (setq profile profile-line)
+	       (setq props ()))
+	      (key-value-line
+	       (axe-log "Pushing kv")
+	       (push key-value-line props)))))
+    (if profile (push (cons profile props) res))
+    res))
 
 (defun now-millis ()
   "Return the current time in milliseconds since Jan 1, 1970 00:00:00 UTC."
@@ -87,11 +127,11 @@ PARAMS."
   (let ((thing (get-text-property (point) prop)))
     (if (null thing) (thing-at-point 'symbol) (alist-get key thing))))
 
-(defun aws-sdk-log(s)
-  "Write string S to the AWS SDK log buffer."
-  (with-current-buffer (get-buffer-create "*aws-sdk-logs*")
+(defun axe-log(s)
+  "Write string S to the axe log buffer."
+  (with-current-buffer (get-buffer-create "*axe-logs*")
     (goto-char (point-max))
     (insert (format "%s\n\n" s))))
 
-(provide 'aws-util)
-;;; aws-util.el ends here
+(provide 'axe-util)
+;;; axe-util.el ends here

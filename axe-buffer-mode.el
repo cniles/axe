@@ -1,60 +1,60 @@
-;;; aws-buffer-mode --- -*- lexical-binding: t -*-
+;;; axe-buffer-mode --- -*- lexical-binding: t -*-
 ;;; Commentary:
 ;;; Code:
 
-(require 'aws-util)
+(require 'axe-util)
 
-(defvar aws-buffer-mode-map
+(defvar axe-buffer-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "n") 'aws-buffer-follow-next)
-    (define-key map (kbd "N") 'aws-buffer-auto-follow)
-    (define-key map (kbd "s") 'aws-buffer-stop-auto-follow)
+    (define-key map (kbd "n") 'axe-buffer-follow-next)
+    (define-key map (kbd "N") 'axe-buffer-auto-follow)
+    (define-key map (kbd "s") 'axe-buffer-stop-auto-follow)
     map)
   "AWS Interactive Buffer key map.")
 
-(define-derived-mode aws-buffer-mode special-mode "AWS Interactive Buffer"
+(define-derived-mode axe-buffer-mode special-mode "AWS Interactive Buffer"
   "AWS Interactive Buffer")
 
-(defvar-local aws-buffer-next-fn nil
+(defvar-local axe-buffer-next-fn nil
   "Function to invoke to get the next AWS API response for this buffer.
-Will be nil if AWS-BUFFER-AUTO-FOLLOW is enabled.")
+Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
 
-(defvar-local aws-buffer-next-timer nil
+(defvar-local axe-buffer-next-timer nil
   "Timer object for a pending invocation of next-fn.")
 
-(defvar-local aws-buffer-auto-follow nil
+(defvar-local axe-buffer-auto-follow nil
   "Variable controlling whether to automaticallty request the next AWS API resposne.")
 
-(defvar-local aws-buffer-auto-follow-delay nil
+(defvar-local axe-buffer-auto-follow-delay nil
   "Variable setting the delay (in seconds) between AWS API requests when auto-following.")
 
-(defun aws-buffer-follow-next ()
-  "Call aws-buffer-next-fn for current buffer."
+(defun axe-buffer-follow-next ()
+  "Call axe-buffer-next-fn for current buffer."
   (interactive)
-  (if (not (functionp aws-buffer-next-fn))
+  (if (not (functionp axe-buffer-next-fn))
       (message "Cannot follow without next function")
-    (let ((func aws-buffer-next-fn))
-      (setq aws-buffer-next-fn ())
+    (let ((func axe-buffer-next-fn))
+      (setq axe-buffer-next-fn ())
       (funcall func))))
 
-(cl-defun aws-buffer-auto-follow (&optional (delay 5.0))
+(cl-defun axe-buffer-auto-follow (&optional (delay 5.0))
   "Enables auto-follow in the current buffer."
   (interactive)
-  (if (not (functionp aws-buffer-next-fn))
+  (if (not (functionp axe-buffer-next-fn))
       (message "Cannot auto follow without a next function.")
     (progn
-      (setq-local aws-buffer-auto-follow t)
-      (setq-local aws-buffer-auto-follow-delay delay)
-      (funcall aws-buffer-next-fn))))
+      (setq-local axe-buffer-auto-follow t)
+      (setq-local axe-buffer-auto-follow-delay delay)
+      (funcall axe-buffer-next-fn))))
 
-(cl-defun aws-buffer-stop-auto-follow ()
+(cl-defun axe-buffer-stop-auto-follow ()
   "Disables auto-follow in the current buffer."
   (interactive)
-  (if (null aws-buffer-auto-follow)
+  (if (null axe-buffer-auto-follow)
       (message "Auto-follow already disabled for buffer.")
-    (setq-local aws-buffer-auto-follow nil)))
+    (setq-local axe-buffer-auto-follow nil)))
 
-(cl-defun aws-buffer-list (api-fn buffer-name list-fn api-fn-args keybindings-fn insert-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
+(cl-defun axe-buffer-list (api-fn buffer-name list-fn api-fn-args keybindings-fn insert-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
   "Displays items returned by consecutive responses from API-FN.
 
 Contents are displayed in the buffer BUFFER-NAME.  The contents
@@ -78,14 +78,14 @@ AUTO-FOLLOW and AUTO-FOLLOW-DELAY key parameters"
   (let ((inhibit-read-only t)
 	(output-buffer (get-buffer-create buffer-name)))
     (with-current-buffer output-buffer
-      (aws-buffer-mode)
-      (setq aws-buffer-next-fn nil)
-      (setq aws-buffer-next-timer nil)
-      (setq aws-buffer-auto-follow auto-follow)
-      (setq aws-buffer-auto-follow-delay auto-follow-delay)
+      (axe-buffer-mode)
+      (setq axe-buffer-next-fn nil)
+      (setq axe-buffer-next-timer nil)
+      (setq axe-buffer-auto-follow auto-follow)
+      (setq axe-buffer-auto-follow-delay auto-follow-delay)
       (if (functionp keybindings-fn)
 	  (let ((map (make-sparse-keymap)))
-	    (set-keymap-parent map aws-buffer-mode-map)
+	    (set-keymap-parent map axe-buffer-mode-map)
 	    (use-local-map (funcall keybindings-fn map))))
       (erase-buffer)
       (setq buffer-read-only t))
@@ -93,21 +93,21 @@ AUTO-FOLLOW and AUTO-FOLLOW-DELAY key parameters"
      (make-next-handler
       (lambda (response next-fn)
 	(with-current-buffer output-buffer
-	  (setq aws-buffer-next-timer nil)
+	  (setq axe-buffer-next-timer nil)
 	  (goto-char (point-max))
 	  (mapc insert-fn (funcall list-fn response))
 	  (or (get-buffer-window output-buffer 'visible) (display-buffer output-buffer))
-	  (if aws-buffer-auto-follow
+	  (if axe-buffer-auto-follow
 	      (progn
-		(setq aws-buffer-next-fn nil)
-		(setq aws-buffer-next-timer
-		      (run-at-time (format "%s sec" aws-buffer-auto-follow-delay) nil next-fn)))
+		(setq axe-buffer-next-fn nil)
+		(setq axe-buffer-next-timer
+		      (run-at-time (format "%s sec" axe-buffer-auto-follow-delay) nil next-fn)))
 	    (progn
-	      (setq aws-buffer-next-fn next-fn)))))
+	      (setq axe-buffer-next-fn next-fn)))))
       api-fn
       api-fn-args
       next-token-fn)
      api-fn-args)))
 
-(provide 'aws-buffer-mode)
-;;; aws-buffer-mode.el ends here
+(provide 'axe-buffer-mode)
+;;; axe-buffer-mode.el ends here
