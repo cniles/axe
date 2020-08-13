@@ -33,12 +33,10 @@ secret."
       (let ((profile-line (axe--match-profile-line line))
 	    (key-value-line (axe--match-key-value-line line)))
 	(cond (profile-line
-	       (axe-log "Pushing profile")
 	       (push (cons profile props) res)
 	       (setq profile profile-line)
 	       (setq props ()))
 	      (key-value-line
-	       (axe-log "Pushing kv")
 	       (push key-value-line props)))))
     (if profile (push (cons profile props) res))
     res))
