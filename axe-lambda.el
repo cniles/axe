@@ -12,8 +12,9 @@ AWS API request parameters. NEXT-TOKEN is the MARKER parameter."
   (axe-api-request
    (axe-api-endpoint 'lambda axe-region)
    'lambda
-   (transformed-invoker success 'json-read-from-string)
+   success
    "GET"
+   :parser 'json-read
    :path-segments '("2015-03-31" "functions")
    :query-params (rassq-delete-all nil `(("FunctionVersion" . ,function-version)
 					 ("Marker" . ,next-token)
@@ -40,6 +41,24 @@ See `https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html'."
 				    ("X-Amz-Client-Context" . ,client-context)))
    :request-payload payload))
 
+(cl-defun axe-lambda--insert-function (fun &key &allow-other-keys)
+  "Insert the details of lambda function FUN into the current buffer."
+  (let ((inhibit-read-only t))
+    (insert (propertize (format "%-15s" (file-size-human-readable (alist-get 'CodeSize fun))) 'function fun 'font-lock-face 'shadow))
+    (insert (propertize (format "%s" (alist-get 'FunctionName fun)) 'function fun 'font-lock-face 'underline))
+    (newline)))
+
+(cl-defun axe-lambda--insert-invoke-response (data &key window response &allow-other-keys)
+  "Insert response from invoking a Lambda.
+
+Displays tailed logs in an auxiliary buffer."
+  (with-selected-window window
+    (with-current-buffer (get-buffer-create (format "%s%s*" (buffer-name) "logs*"))
+      (display-buffer-below-selected (current-buffer) '((window-height . 20)))
+      (insert (base64-decode-string (request-response-header response "X-Amz-Log-Result")))))
+  (let ((inhibit-read-only t))
+    (insert data)))
+
 ;;;###autoload
 (cl-defun axe-lambda-list-functions (&key function-version master-region max-items)
   "List functions in the account.
@@ -52,19 +71,13 @@ See `https://docs.aws.amazon.com/lambda/latest/dg/API_ListFunctions.html'."
   (axe-buffer-list
    'axe-lambda--list-functions
    "*axe-lambda-functions*"
-   (lambda (response) (alist-get 'Functions response))
+   (cl-function (lambda (&key data &allow-other-keys) (alist-get 'Functions data)))
    (list :function-version function-version :master-region master-region :max-items max-items)
    ()
    'axe-lambda--insert-function
-   (lambda (response) (alist-get 'NextMarker response))))
+   (lambda (response) (alist-get 'NextMarker (request-response-data response)))))
 
-(cl-defun axe-lambda--insert-function (fun)
-  "Insert the details of lambda function FUN into the current buffer."
-  (let ((inhibit-read-only t))
-    (insert (propertize (format "%-15s" (file-size-human-readable (alist-get 'CodeSize fun))) 'function fun 'font-lock-face 'shadow))
-    (insert (propertize (format "%s" (alist-get 'FunctionName fun)) 'function fun 'font-lock-face 'underline))
-    (newline)))
-
+;;;###autoload
 (cl-defun axe-lambda-invoke-with-buffer (function-name buffer-or-name)
   "Invoke AWS Lambda function with name FUNCTION-NAME.
 
@@ -77,13 +90,11 @@ The contents of BUFFER-OR-NAME are used as the payload."
     (axe-buffer-list
      'axe-lambda--invoke
      (format "*%s:%s-response*" (buffer-name input-buffer) function-name)
-     (lambda (response) (list response))
+     (cl-function (lambda (&key data response &allow-other-keys) (list data)))
      (let ((payload (with-current-buffer input-buffer (buffer-string))))
        (list function-name payload :log-type "Tail"))
      ()
-     (lambda (response)
-       (let ((inhibit-read-only t))
-	 (insert response)))
+     'axe-lambda--insert-invoke-response
      ())))
 
 (provide 'axe-lambda)

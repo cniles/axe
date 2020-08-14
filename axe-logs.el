@@ -17,8 +17,9 @@ can be specified nil to omit."
   (axe-api-request
    (axe-api-endpoint 'logs axe-region)
    'logs
-   (lambda (response) (funcall success (json-read-from-string response)))
+   success
    "POST"
+   :parser 'json-read
    :headers '(("Content-Type" . "application/x-amz-json-1.1")
 	      ("X-Amz-Target" . "Logs_20140328.DescribeLogGroups"))
    :request-payload (trim-and-encode-alist
@@ -30,7 +31,10 @@ can be specified nil to omit."
   "Describe log streams for LOG-GROUP-NAME."
   (axe-api-request
    (axe-api-endpoint 'logs axe-region)
-   'logs (lambda (response) (funcall success (json-read-from-string response))) "POST"
+   'logs
+   success
+   "POST"
+   :parser 'json-read
    :headers '(("Content-Type" . "application/x-amz-json-1.1")
 	      ("X-Amz-Target" . "Logs_20140328.DescribeLogStreams"))
    :request-payload (trim-and-encode-alist
@@ -44,8 +48,11 @@ can be specified nil to omit."
 (cl-defun axe-logs--get-log-events (success log-group-name log-stream-name &key next-token end-time limit start-from-head start-time)
   "Get log events for stream with name LOG-STREAM-NAME of group LOG-GROUP-NAME"
   (axe-api-request
-    (axe-api-endpoint 'logs axe-region)
-   'logs (lambda (response) (funcall success (json-read-from-string response))) "POST"
+   (axe-api-endpoint 'logs axe-region)
+   'logs
+   success
+   "POST"
+   :parser 'json-read
    :headers '(("Content-Type" . "application/x-amz-json-1.1")
 	      ("X-Amz-Target" . "Logs_20140328.GetLogEvents"))
    :request-payload (trim-and-encode-alist
@@ -59,7 +66,7 @@ can be specified nil to omit."
 
 ;;; Insert functions
 
-(defun axe-logs--insert-log-group (log-group)
+(cl-defun axe-logs--insert-log-group (log-group &key &allow-other-keys)
   "Insert formatted text for LOG-GROUP into current buffer."
   (let ((inhibit-read-only t)
 	(log-group-name (alist-get 'logGroupName log-group))
@@ -67,7 +74,7 @@ can be specified nil to omit."
 	(creation-time (format-time-string "%F %T" (seconds-to-time (/ (alist-get 'creationTime log-group) 1000)))))
     (insert (propertize (format "%s %8s %s\n" creation-time size log-group-name) 'log-group log-group))))
 
-(defun axe-logs--insert-log-event (log-event)
+(cl-defun axe-logs--insert-log-event (log-event &key &allow-other-keys)
   "Insert formatted text for LOG-EVENT into current buffer."
   (let ((inhibit-read-only t)
 	(message (alist-get 'message log-event))
@@ -89,13 +96,15 @@ displayed."
     (axe-buffer-list
      'axe-logs--describe-log-groups
      "*axe-log-groups*"
-     (lambda (response) (alist-get 'logGroups response))
+     (cl-function (lambda (&key data &allow-other-keys)
+		    (alist-get 'logGroups data)))
      (list :prefix prefix :limit limit)
      (lambda (map)
-       (define-key map (kbd "l") 'axe-logs--latest-log-stream-at-point)
+       (define-key map (kbd "l") 'axe-logs-latest-log-stream-at-point)
        map)
      'axe-logs--insert-log-group
-     (lambda (response) (alist-get 'nextToken response))
+     (cl-function (lambda (&key data &allow-other-keys)
+		    (alist-get 'nextToken data)))
      :auto-follow t
      :auto-follow-delay 0.1)))
 
@@ -110,12 +119,12 @@ sLog Stream Name: ")
   (axe-buffer-list
    'axe-logs--get-log-events
    (format "*axe-log-stream:%s*" log-stream-name)
-   (lambda (response) (alist-get 'events response))
+   (cl-function (lambda (&key data &allow-other-keys) (alist-get 'events data)))
    (list log-group-name log-stream-name)
    ()
    'axe-logs--insert-log-event
-   (lambda (response)
-     (alist-get 'nextForwardToken response))
+   (cl-function (lambda (&key data &allow-other-keys)
+     (alist-get 'nextForwardToken data)))
    :auto-follow auto-follow
    :auto-follow-delay auto-follow-delay))
 
@@ -125,16 +134,17 @@ sLog Stream Name: ")
     (if (null log-group) (thing-at-point 'symbol) (alist-get 'logGroupName log-group))))
 
 ;;;###autoload
-(defun axe-logs--latest-log-stream-at-point ()
+(defun axe-logs-latest-log-stream-at-point ()
   "Open the log stream defined at the current  point.
 First checks for text property log-group otherwise uses the text
 at point in the buffer."
   (interactive)
   (let ((log-group-name (axe-logs--log-group-name-at-point)))
     (axe-logs--describe-log-streams
-     (lambda (response)
-       (let ((log-stream-name (alist-get 'logStreamName (elt (alist-get 'logStreams response) 0))))
-	 (axe-logs-get-log-events log-group-name log-stream-name)))
+     (cl-function
+      (lambda (&key data &allow-other-keys)
+	(let ((log-stream-name (alist-get 'logStreamName (elt (alist-get 'logStreams data) 0))))
+	  (axe-logs-get-log-events log-group-name log-stream-name))))
      log-group-name
      :limit 1
      :descending t

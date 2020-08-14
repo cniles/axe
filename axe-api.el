@@ -229,7 +229,8 @@ the full AWS API sigv4 authorization header.."
 				(path-segments (list ""))
 				(algorithm "AWS4-HMAC-SHA256")
 				(request-payload "")
-				(headers ()))
+				(headers ())
+				(parser 'buffer-string))
   "Make a signed AWS API sigv4 request.
 
 SERVICE-CODE.  SUCCESS.  &KEY."
@@ -261,7 +262,7 @@ SERVICE-CODE.  SUCCESS.  &KEY."
       ;; Including them will prompt an error as they wouldn't have been included in the
       ;; canonical request signing.
       :headers (append headers (list authorization-header '("User-Agent" . "") '("Accept" . "")) ())
-      :parser 'buffer-string
+      :parser parser
       :type method-type
       :data request-payload
       :error (cl-function
@@ -271,9 +272,9 @@ SERVICE-CODE.  SUCCESS.  &KEY."
 		(axe-log "Error data:")
 		(axe-log data)))
       :success (cl-function
-		(lambda (&key response &allow-other-keys)
+		(lambda (&key data response &allow-other-keys)
 		  (axe-log "Successful API response.")
-		  (funcall success (request-response-data response)))))))
+		  (funcall success :data data :response response))))))
 
 (provide 'axe-api)
 ;;; axe-api.el ends here

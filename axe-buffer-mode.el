@@ -89,21 +89,25 @@ AUTO-FOLLOW and AUTO-FOLLOW-DELAY key parameters"
 	    (use-local-map (funcall keybindings-fn map))))
       (erase-buffer)
       (setq buffer-read-only t))
-    (apply api-fn
+    (apply
+     api-fn
      (make-next-handler
-      (lambda (response next-fn)
-	(with-current-buffer output-buffer
-	  (setq axe-buffer-next-timer nil)
-	  (goto-char (point-max))
-	  (mapc insert-fn (funcall list-fn response))
-	  (or (get-buffer-window output-buffer 'visible) (display-buffer output-buffer))
-	  (if axe-buffer-auto-follow
-	      (progn
-		(setq axe-buffer-next-fn nil)
-		(setq axe-buffer-next-timer
-		      (run-at-time (format "%s sec" axe-buffer-auto-follow-delay) nil next-fn)))
-	    (progn
-	      (setq axe-buffer-next-fn next-fn)))))
+      (cl-function
+       (lambda (&key response data next-fn &allow-other-keys)
+	 (with-current-buffer output-buffer
+	   (setq axe-buffer-next-timer nil)
+	   (goto-char (point-max))
+	   (let ((window (or (get-buffer-window output-buffer 'visible) (display-buffer output-buffer))))
+	     (mapc (lambda (row)
+		     (funcall insert-fn row :window window :response response))
+		   (funcall list-fn :data data :response response)))
+	   (if axe-buffer-auto-follow
+	       (progn
+		 (setq axe-buffer-next-fn nil)
+		 (setq axe-buffer-next-timer
+		       (run-at-time (format "%s sec" axe-buffer-auto-follow-delay) nil next-fn)))
+	     (progn
+	       (setq axe-buffer-next-fn next-fn))))))
       api-fn
       api-fn-args
       next-token-fn)

@@ -2,6 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 (require 'json)
+(require 's)
 (eval-when-compile (require 'cl))
 
 (defvar axe-aws-credential-file
@@ -83,15 +84,13 @@ value."
 	 ()))
      children)))
 
-(defun parse-xml-string (string)
-  "Parse and return tree represented by XML in STRING."
-  (with-temp-buffer
-    (insert string)
-    (xml-parse-region)))
+(defun xml-read ()
+  "Parse and return tree represented by xml in current buffer."
+  (libxml-parse-xml-region (point) (point-max)))
 
 (defun transformed-invoker (fn transform-fn)
   "Create a lambda that transforms its argument with TRANSFORM-FN and invokes FN with the result."
-  (lambda (arg) (funcall fn (funcall transform-fn arg))))
+  (lambda (body get-header) (funcall fn (funcall transform-fn body) get-header)))
 
 (cl-defun make-next-handler (success api-fn params next-token-fn)
   "Make a lambda that handles paged log group responses.
@@ -109,23 +108,23 @@ API-FN args must follow the following form:
 
 It is up to the caller to ensure REQUIRED ARGS are provided in
 PARAMS."
-  (lambda (response)
-    (let ((next-token (if (functionp next-token-fn) (funcall next-token-fn response))))
-      (funcall
-       success response
-       (if (not (null next-token))
-	   (lambda ()
-	     (apply api-fn
-		    (make-next-handler success api-fn params next-token-fn)
-		    (append params (list :next-token next-token)))))))))
-
+  (cl-function
+   (lambda (&key data response &allow-other-keys)
+     (let ((next-token (if (functionp next-token-fn) (funcall next-token-fn :data data :response response))))
+       (funcall
+	success :data data :response response
+	:next-fn (if (not (null next-token))
+		     (lambda ()
+		       (apply api-fn
+			      (make-next-handler success api-fn params next-token-fn)
+			      (append params (list :next-token next-token))))))))))
 
 (defun thing-or-property-at-point (prop key)
   "Get the value for KEY of text property PROP or symbol at point."
   (let ((thing (get-text-property (point) prop)))
     (if (null thing) (thing-at-point 'symbol) (alist-get key thing))))
 
-(defun axe-log(s)
+(defun axe-log (s)
   "Write string S to the axe log buffer."
   (with-current-buffer (get-buffer-create "*axe-logs*")
     (goto-char (point-max))
