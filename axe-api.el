@@ -273,8 +273,7 @@ SERVICE-CODE.  SUCCESS.  &KEY."
       :success (cl-function
 		(lambda (&key response &allow-other-keys)
 		  (axe-log "Successful API response.")
-		  (funcall success (request-response-data response))))
-      )))
+		  (funcall success (request-response-data response)))))))
 
 (provide 'axe-api)
 ;;; axe-api.el ends here

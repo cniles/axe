@@ -85,7 +85,7 @@ then subsequent results may take some time to load and
 displayed."
   (interactive "sPrefix: ")
   (let ((prefix (if (equal "" prefix) nil prefix))
-	(limit 1))
+	(limit ()))
     (axe-buffer-list
      'axe-logs--describe-log-groups
      "*axe-log-groups*"

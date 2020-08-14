@@ -20,7 +20,7 @@ AWS API request parameters. NEXT-TOKEN is the MARKER parameter."
 					 ("MasterRegion" . ,master-region)
 					 ("MaxItems" . ,max-items)))))
 
-(defun axe-lambda--invoke (success function-name payload &key client-context invocation-type log-type qualifier)
+(cl-defun axe-lambda--invoke (success function-name payload &key client-context invocation-type log-type qualifier)
   "Invoke AWS Lambda function with name FUNCTION-NAME and PAYLOAD.
 
 SUCCESS is invoked upon completion.  Parameters CLIENT-CONTEXT,
@@ -64,6 +64,27 @@ See `https://docs.aws.amazon.com/lambda/latest/dg/API_ListFunctions.html'."
     (insert (propertize (format "%-15s" (file-size-human-readable (alist-get 'CodeSize fun))) 'function fun 'font-lock-face 'shadow))
     (insert (propertize (format "%s" (alist-get 'FunctionName fun)) 'function fun 'font-lock-face 'underline))
     (newline)))
+
+(cl-defun axe-lambda-invoke-with-buffer (function-name buffer-or-name)
+  "Invoke AWS Lambda function with name FUNCTION-NAME.
+
+The contents of BUFFER-OR-NAME are used as the payload."
+  (interactive
+   (list
+    (read-from-minibuffer "Function Name: ")
+    (read-from-minibuffer "Buffer: " (buffer-name))))
+  (let ((input-buffer (get-buffer buffer-or-name)))
+    (axe-buffer-list
+     'axe-lambda--invoke
+     (format "*%s:%s-response*" (buffer-name input-buffer) function-name)
+     (lambda (response) (list response))
+     (let ((payload (with-current-buffer input-buffer (buffer-string))))
+       (list function-name payload :log-type "Tail"))
+     ()
+     (lambda (response)
+       (let ((inhibit-read-only t))
+	 (insert response)))
+     ())))
 
 (provide 'axe-lambda)
 ;;; axe-lambda.el ends here
