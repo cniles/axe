@@ -75,7 +75,7 @@ See `https://docs.aws.amazon.com/lambda/latest/dg/API_ListFunctions.html'."
    (list :function-version function-version :master-region master-region :max-items max-items)
    ()
    'axe-lambda--insert-function
-   (lambda (response) (alist-get 'NextMarker (request-response-data response)))))
+   (cl-function (lambda (&key data &allow-other-keys) (alist-get 'NextMarker data)))))
 
 ;;;###autoload
 (cl-defun axe-lambda-invoke-with-buffer (function-name buffer-or-name)
