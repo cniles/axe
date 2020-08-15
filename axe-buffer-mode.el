@@ -74,7 +74,6 @@ from the API.  NEXT-TOKEN-FN is called with the API response in
 
 Tail-calling of the next API response can be controlled with the
 AUTO-FOLLOW and AUTO-FOLLOW-DELAY key parameters"
-  (interactive)
   (let ((inhibit-read-only t)
 	(output-buffer (get-buffer-create buffer-name)))
     (with-current-buffer output-buffer
