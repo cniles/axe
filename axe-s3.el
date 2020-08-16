@@ -15,7 +15,7 @@
    :parser 'xml-read
    :headers (list (cons "x-amz-content-sha256" (axe-api-sigv4-hash "")))))
 
-(cl-defun axe-s3--list-objects-v2 (success bucket &key next-token delimiter encoding-type max-keys prefix start-after)
+(cl-defun axe-s3--list-objects-v2 (success bucket &key next-token delimiter encoding-type fetch-owner max-keys prefix start-after request-payer)
   "Call SUCCESS with result of List Object V2 on BUCKET.
 Optional parameters NEXT-TOKEN, DELIMITER, ENCODING-TYPE,
 MAX-KEYS, PREFIX and START-AFTER can also be specifiied.
@@ -27,8 +27,15 @@ parameter."
    "GET"
    :parser 'xml-read
    :query-params (rassq-delete-all nil `(("list-type" . "2")
-					 ("continuation-token" . ,next-token)))
-   :headers (list (cons "x-amz-content-sha256" (axe-api-sigv4-hash "")))))
+					 ("continuation-token" . ,next-token)
+					 ("delimiter" . ,delimiter)
+					 ("encoding-type" . ,encoding-type)
+					 ("fetch-owner" . ,fetch-owner)
+					 ("max-keys" . ,max-keys)
+					 ("prefix" . ,prefix)
+					 ("start-after" . ,start-after)))
+   :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api-sigv4-hash ""))
+				    ("x-amz-request-payer" . ,request-payer)))))
 
 (cl-defun axe-s3--insert-bucket (bucket &key &allow-other-keys)
   "Insert the details of BUCKET into the current buffer."
