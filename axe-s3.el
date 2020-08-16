@@ -5,6 +5,7 @@
 (require 'axe-util)
 (require 'axe-buffer-mode)
 (require 'xml)
+(require 'xmlgen)
 
 (defun axe-s3--list-buckets (success)
   "Get buckets in the account and call SUCCESS when done."
@@ -36,6 +37,49 @@ parameter."
 					 ("start-after" . ,start-after)))
    :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api-sigv4-hash ""))
 				    ("x-amz-request-payer" . ,request-payer)))))
+
+(cl-defun axe-s3--create-bucket (success bucket &key acl grant-full-control grant-read grant-read-acp grant-write grant-write-acp object-lock-enabled-for-bucket location-constraint)
+  "Create bucket with name BUCKET.
+ACL, GRANT-FULL-CONTROL GRANT-READ GRANT-READ-ACP GRANT-WRITE
+GRANT-WRITE-ACP OBJECT-LOCK-ENABLED-FOR-BUCKET and
+LOCATION-CONSTRAINT parameters behave as described in API
+CreateBucket documentation. See
+`https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html'"
+  (let ((payload (if location-constraint
+		     (xmlgen `(CreateBucketConfiguration :xmlns "http://s3.amazonaws.com/doc/2006-03-01/"
+							 (LocationConstraint location-constraint)))
+		   "")))
+    (axe-api-request
+     (format "%s.s3.amazonaws.com" bucket)
+     's3
+     success
+     "PUT"
+     :parser 'xml-read
+     :headers (rassq-delete-all nil `(("Content-Type" . "text/plain")
+				      ("x-amz-acl" . ,acl)
+				      ("x-amz-grant-full-control" . ,grant-full-control)
+				      ("x-amz-grant-read" . ,grant-read)
+				      ("x-amz-grant-read-acp" . ,grant-read-acp)
+				      ("x-amz-grant-write" . ,grant-write)
+				      ("x-amz-grant-write-acp" . ,grant-write-acp)
+				      ("x-amz-bucket-object-lock-enabled" . ,object-lock-enabled-for-bucket)
+				      ("x-amz-content-sha256" . ,(axe-api-sigv4-hash payload))))
+     :request-payload payload)))
+
+(cl-defun axe-s3--delete-bucket (success bucket)
+  "Create bucket with name BUCKET.
+ACL, GRANT-FULL-CONTROL GRANT-READ GRANT-READ-ACP GRANT-WRITE
+GRANT-WRITE-ACP OBJECT-LOCK-ENABLED-FOR-BUCKET and
+LOCATION-CONSTRAINT parameters behave as described in API
+CreateBucket documentation. See
+`https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html'"
+  (axe-api-request
+   (format "%s.s3.amazonaws.com" bucket)
+   's3
+   success
+   "DELETE"
+   :parser 'xml-read
+   :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api-sigv4-hash ""))))))
 
 (cl-defun axe-s3--insert-bucket (bucket &key &allow-other-keys)
   "Insert the details of BUCKET into the current buffer."
@@ -92,6 +136,22 @@ parameter."
     (lambda (&key data &allow-other-keys)
       (let ((next-token (alist-get 'NextContinuationToken (xml-node-to-alist data))))
 	next-token)))))
+
+;;;###autoload
+(defun axe-s3-create-bucket (bucket)
+  "Create BUCKET."
+  (interactive "sBucket: ")
+  (axe-s3--create-bucket
+   (cl-function (lambda (&key &allow-other-keys) (message (format "Successfully created bucket %s" bucket))))
+   bucket))
+
+;;;###autoload
+(defun axe-s3-delete-bucket (bucket)
+  "Delete BUCKET."
+  (interactive "sBucket: ")
+  (axe-s3--delete-bucket
+   (cl-function (lambda (&key data &allow-other-keys) (axe-log data) (message (format "Successfully deleted bucket %s" bucket))))
+   bucket))
 
 (provide 'axe-s3)
 ;;; axe-s3.el ends here

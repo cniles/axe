@@ -5,6 +5,7 @@
 
 (depends-on "hmac")
 (depends-on "request")
+(depends-on "xmlgen")
 
 (development
  (depends-on "f")
