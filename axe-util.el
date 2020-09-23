@@ -5,12 +5,6 @@
 (require 's)
 (eval-when-compile (require 'cl))
 
-(defvar axe-aws-credential-file
-  (let ((home (getenv (cond ((eql system-type 'windows-nt) "USERPROFILE")
-			    (t "HOME")))))
-    (expand-file-name "credentials" (expand-file-name ".aws" home)))
-  "Path the .aws/credentials file.")
-
 (defun axe--match-profile-line (line)
   "Return profile name if LINE is a profile line."
   (nth 1 (s-match "^\s*\\[\s*\\([a-zA-Z0-9-_]+\\)\s*]\s*$" line)))

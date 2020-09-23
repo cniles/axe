@@ -1,5 +1,6 @@
 ;;; axe -- AWS Extensions for Emacs
 ;;; Commentary:
+;;; Variable definitions
 ;;; Code:
 (defvar axe-regions
   '((us-east-2 . "US East (Ohio)")
@@ -39,10 +40,11 @@
 (defvar axe-secret-access-key nil
   "AWS Secret Access key id.")
 
-(defun axe-region-code-is-valid-p (region-code)
-  "Check if REGION-CODE is valid.
-To be valid it must exist in `axe-regions' as a key."
-  (if (eq (assoc region-code axe-regions) nil) nil t))
+(defvar axe-aws-credential-file
+  (let ((home (getenv (cond ((eql system-type 'windows-nt) "USERPROFILE")
+			    (t "HOME")))))
+    (expand-file-name "credentials" (expand-file-name ".aws" home)))
+  "Path the .aws/credentials file.")
 
 (provide 'axe)
 ;;; axe.el ends here

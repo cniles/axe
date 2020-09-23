@@ -1,14 +1,22 @@
 ;;; axe-buffer-mode --- -*- lexical-binding: t -*-
 ;;; Commentary:
+
+;;; Defines variables and functions to provide easy and uniform
+;;; integration of AWS APIs responses into the AXE Emacs buffer mode.
+;;; Chiefly, it provides a pattern for handling paged AWS API
+;;; responses.  It makes concessions for automatically extracting the
+;;; response next token from varying response content types, e.g. XML
+;;; or JSON and re-invoking the API with the next token.
+
 ;;; Code:
 
 (require 'axe-util)
 
 (defvar axe-buffer-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "n") 'axe-buffer-follow-next)
-    (define-key map (kbd "N") 'axe-buffer-auto-follow)
-    (define-key map (kbd "s") 'axe-buffer-stop-auto-follow)
+    (define-key map (kbd "n") 'axe--buffer-follow-next)
+    (define-key map (kbd "N") 'axe--buffer-auto-follow)
+    (define-key map (kbd "s") 'axe--buffer-stop-auto-follow)
     map)
   "AWS Interactive Buffer key map.")
 
@@ -28,7 +36,7 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
 (defvar-local axe-buffer-auto-follow-delay nil
   "Variable setting the delay (in seconds) between AWS API requests when auto-following.")
 
-(defun axe-buffer-follow-next ()
+(defun axe--buffer-follow-next ()
   "Call axe-buffer-next-fn for current buffer."
   (interactive)
   (if (not (functionp axe-buffer-next-fn))
@@ -36,8 +44,8 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
     (let ((func axe-buffer-next-fn))
       (setq axe-buffer-next-fn ())
       (funcall func))))
-
-(cl-defun axe-buffer-auto-follow (&optional (delay 5.0))
+ 
+(cl-defun axe--buffer-auto-follow (&optional (delay 5.0))
   "Enables auto-follow in the current buffer."
   (interactive)
   (if (not (functionp axe-buffer-next-fn))
@@ -47,14 +55,14 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
       (setq-local axe-buffer-auto-follow-delay delay)
       (funcall axe-buffer-next-fn))))
 
-(cl-defun axe-buffer-stop-auto-follow ()
+(cl-defun axe--buffer-stop-auto-follow ()
   "Disables auto-follow in the current buffer."
   (interactive)
   (if (null axe-buffer-auto-follow)
       (message "Auto-follow already disabled for buffer.")
     (setq-local axe-buffer-auto-follow nil)))
 
-(cl-defun axe-buffer-list (api-fn buffer-name list-fn api-fn-args keybindings-fn insert-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
+(cl-defun axe--buffer-list (api-fn buffer-name list-fn api-fn-args keybindings-fn insert-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
   "Displays items returned by consecutive responses from API-FN.
 
 Contents are displayed in the buffer BUFFER-NAME.  The contents
