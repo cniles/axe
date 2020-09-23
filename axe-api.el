@@ -214,6 +214,37 @@ the full AWS API sigv4 authorization header.."
   "Return a properly formed API endpoint from SERVICE-CODE and REGION-CODE."
   (format "%s.%s.amazonaws.com" service-code region-code))
 
+(defun axe--match-profile-line (line)
+  "Return profile name if LINE is a profile line."
+  (nth 1 (s-match "^\s*\\[\s*\\([a-zA-Z0-9-_]+\\)\s*]\s*$" line)))
+
+(defun axe--match-key-value-line (line)
+  "Return cons of key value pair if LINE is a key/value line."
+  (let ((match (cdr (s-match "^\s*\\([^[:blank:]]+\\)\s*=\s*\\([^[:blank:]]+\\)\s*$" line))))
+    (cons (car match) (nth 1 match))))
+
+(defun axe--parse-credential-file ()
+  "Read the contentds of the AWS crednetial file.
+
+Returns an alist of profile names mapped to their key and
+secret."
+  (let ((props ())
+	(profile ())
+	(res ()))
+    (dolist (line (with-temp-buffer
+		    (insert-file-contents axe-aws-credential-file)
+		    (split-string (buffer-string) "\n" t)))
+      (let ((profile-line (axe--match-profile-line line))
+	    (key-value-line (axe--match-key-value-line line)))
+	(cond (profile-line
+	       (push (cons profile props) res)
+	       (setq profile profile-line)
+	       (setq props ()))
+	      (key-value-line
+	       (push key-value-line props)))))
+    (if profile (push (cons profile props) res))
+    res))
+
 (cl-defun axe--api-get-credentials ()
   "Get the AWS API access key id and secret access key."
   (cond ((getenv "AWS_ACCESS_KEY_ID")
