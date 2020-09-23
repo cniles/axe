@@ -1,5 +1,30 @@
 ;;; axe-lambda -- Package for interacting with AWS Lambda
+
+;; Copyright (C) 2020 Craig Niles
+
+;; Author: Craig Niles <niles.c at gmail.com>
+;; URL: https://github.com/cniles/axe
+
+;; This file is NOT part of GNU Emacs.
+
+;; axe is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; axe is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with axe.  If not, see <http://www.gnu.org/licenses/>.
+
 ;;; Commentary:
+
+;; axe-lambda.el provides functions for listing and invoking AWS
+;; lambda functions.
+
 ;;; Code:
 (require 'axe-api)
 (require 'axe-buffer-mode)

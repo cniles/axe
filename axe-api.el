@@ -1,13 +1,30 @@
 ;;; axe-api --- AWS API signing & request package -*- lexical-binding: t; -*-
 
-;;; Commentary:
-;;;
-;;; Implementation of the AWS sigv4 request signing process, as
-;;; defined at:
-;;; https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
+;; Copyright (C) 2020 Craig Niles
 
-;;; Requires TKF's request package to have been installed and
-;;; available, as well as hmac package.
+;; Author: Craig Niles <niles.c at gmail.com>
+;; URL: https://github.com/cniles/axe
+
+;; This file is NOT part of GNU Emacs.
+
+;; axe is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; axe is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with axe.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Implementation of the AWS sigv4 request signing process, as
+;; defined here: https://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
+;; Requires request.el and hmac.el
 
 ;;; Code:
 

@@ -1,40 +1,35 @@
 ;;; axe-util  --- Utility functions -*- lexical-binding: t -*-
+
+;; Copyright (C) 2020 Craig Niles
+
+;; Author: Craig Niles <niles.c at gmail.com>
+;; URL: https://github.com/cniles/axe
+
+;; This file is NOT part of GNU Emacs.
+
+;; axe is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; axe is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with axe.  If not, see <http://www.gnu.org/licenses/>.
+
 ;;; Commentary:
+
+;; axe-util.el contains utility methods used throughout the axe
+;; package.
+
 ;;; Code:
+
 (require 'json)
 (require 's)
 (eval-when-compile (require 'cl))
-
-(defun axe--match-profile-line (line)
-  "Return profile name if LINE is a profile line."
-  (nth 1 (s-match "^\s*\\[\s*\\([a-zA-Z0-9-_]+\\)\s*]\s*$" line)))
-
-(defun axe--match-key-value-line (line)
-  "Return cons of key value pair if LINE is a key/value line."
-  (let ((match (cdr (s-match "^\s*\\([^[:blank:]]+\\)\s*=\s*\\([^[:blank:]]+\\)\s*$" line))))
-    (cons (car match) (nth 1 match))))
-
-(defun axe--parse-credential-file ()
-  "Read the contentds of the AWS crednetial file.
-
-Returns an alist of profile names mapped to their key and
-secret."
-  (let ((props ())
-	(profile ())
-	(res ()))
-    (dolist (line (with-temp-buffer
-		    (insert-file-contents axe-aws-credential-file)
-		    (split-string (buffer-string) "\n" t)))
-      (let ((profile-line (axe--match-profile-line line))
-	    (key-value-line (axe--match-key-value-line line)))
-	(cond (profile-line
-	       (push (cons profile props) res)
-	       (setq profile profile-line)
-	       (setq props ()))
-	      (key-value-line
-	       (push key-value-line props)))))
-    (if profile (push (cons profile props) res))
-    res))
 
 (defun now-millis ()
   "Return the current time in milliseconds since Jan 1, 1970 00:00:00 UTC."
