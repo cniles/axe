@@ -64,14 +64,15 @@ value."
 (defun axe-util--search-xml-children (sym children)
   "Search an XML parse tree CHILDREN for all nodes from tag name SYM."
   (if (null children) ()
-    (mapcan
-     (lambda (child)
-       (if (listp child)
-	   (if (eq sym (car child))
-	       (list child)
-	     (axe-util--search-xml-children sym (nthcdr 2 child)))
-	 ()))
-     children)))
+    (apply #'append
+	   (mapcar
+	    (lambda (child)
+	      (if (listp child)
+		  (if (eq sym (car child))
+		      (list child)
+		    (axe-util--search-xml-children sym (nthcdr 2 child)))
+		()))
+	    children))))
 
 (defun axe-util--xml-read ()
   "Parse and return tree represented by xml in current buffer."
