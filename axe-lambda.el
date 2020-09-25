@@ -1,8 +1,9 @@
-;;; axe-lambda -- Package for interacting with AWS Lambda
+;;; axe-lambda.el --- Package for interacting with AWS Lambda -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2020 Craig Niles
 
 ;; Author: Craig Niles <niles.c at gmail.com>
+;; Maintainer: Craig Niles <niles.c at gmail.com>
 ;; URL: https://github.com/cniles/axe
 
 ;; This file is NOT part of GNU Emacs.
@@ -26,27 +27,28 @@
 ;; lambda functions.
 
 ;;; Code:
+
 (require 'axe-api)
 (require 'axe-buffer-mode)
 
-(cl-defun axe--lambda-list-functions (success &key function-version next-token master-region max-items)
+(cl-defun axe-lambda--list-functions (success &key function-version next-token master-region max-items)
   "List functions in the account and call SUCCESS when complete.
 
 FUNCTION-VERSION, MASTER-REGION and MAX-ITEMS all correspond to
 AWS API request parameters. NEXT-TOKEN is the MARKER parameter."
-  (axe--api-request
-   (axe--api-endpoint 'lambda axe-region)
+  (axe-api-request
+   (axe-api-domain 'lambda axe-region)
    'lambda
    success
    "GET"
-   :parser 'json-read
+   :parser #'json-read
    :path-segments '("2015-03-31" "functions")
    :query-params (rassq-delete-all nil `(("FunctionVersion" . ,function-version)
 					 ("Marker" . ,next-token)
 					 ("MasterRegion" . ,master-region)
 					 ("MaxItems" . ,max-items)))))
 
-(cl-defun axe--lambda-invoke (success function-name payload &key client-context invocation-type log-type qualifier)
+(cl-defun axe-lambda--invoke (success function-name payload &key client-context invocation-type log-type qualifier)
   "Invoke AWS Lambda function with name FUNCTION-NAME and PAYLOAD.
 
 SUCCESS is invoked upon completion.  Parameters CLIENT-CONTEXT,
@@ -54,8 +56,8 @@ INVOCATION-TYPE, LOG-TYPE and QUALIFIER operate as described in
 AWS API request parameters.
 
 See `https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html'."
-  (axe--api-request
-   (axe--api-endpoint 'lambda axe-region)
+  (axe-api-request
+   (axe-api-domain 'lambda axe-region)
    'lambda
    success
    "POST"
@@ -66,14 +68,14 @@ See `https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html'."
 				    ("X-Amz-Client-Context" . ,client-context)))
    :request-payload payload))
 
-(cl-defun axe--lambda-insert-function (fun &key &allow-other-keys)
+(cl-defun axe-lambda--insert-function (fun &key &allow-other-keys)
   "Insert the details of lambda function FUN into the current buffer."
   (let ((inhibit-read-only t))
     (insert (propertize (format "%-15s" (file-size-human-readable (alist-get 'CodeSize fun))) 'function fun 'font-lock-face 'shadow))
     (insert (propertize (format "%s" (alist-get 'FunctionName fun)) 'function fun 'font-lock-face 'underline))
     (newline)))
 
-(cl-defun axe--lambda-insert-invoke-response (data &key window response &allow-other-keys)
+(cl-defun axe-lambda--insert-invoke-response (data &key window response &allow-other-keys)
   "Insert response from invoking a Lambda.
 
 Displays tailed logs in an auxiliary buffer."
@@ -93,13 +95,13 @@ correspond to AWS API request parameters.
 
 See `https://docs.aws.amazon.com/lambda/latest/dg/API_ListFunctions.html'."
   (interactive)
-  (axe--buffer-list
-   'axe--lambda-list-functions
+  (axe-buffer-list
+   #'axe-lambda--list-functions
    "*axe-lambda-functions*"
    (cl-function (lambda (&key data &allow-other-keys) (alist-get 'Functions data)))
    (list :function-version function-version :master-region master-region :max-items max-items)
    ()
-   'axe--lambda-insert-function
+   #'axe-lambda--insert-function
    (cl-function (lambda (&key data &allow-other-keys) (alist-get 'NextMarker data)))))
 
 ;;;###autoload
@@ -112,14 +114,14 @@ The contents of BUFFER-OR-NAME are used as the payload."
     (read-from-minibuffer "Function Name: ")
     (read-from-minibuffer "Buffer: " (buffer-name))))
   (let ((input-buffer (get-buffer buffer-or-name)))
-    (axe--buffer-list
-     'axe--lambda-invoke
+    (axe-buffer-list
+     #'axe-lambda--invoke
      (format "*%s:%s-response*" (buffer-name input-buffer) function-name)
-     (cl-function (lambda (&key data response &allow-other-keys) (list data)))
+     (cl-function (lambda (&key data _response &allow-other-keys) (list data)))
      (let ((payload (with-current-buffer input-buffer (buffer-string))))
        (list function-name payload :log-type "Tail"))
      ()
-     'axe--lambda-insert-invoke-response
+     #'axe-lambda--insert-invoke-response
      ())))
 
 (provide 'axe-lambda)

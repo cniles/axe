@@ -1,8 +1,9 @@
-;;; axe-buffer-mode --- -*- lexical-binding: t -*-
+;;; axe-buffer-mode.el --- Buffer mode for displaying AWS API responses -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 Craig Niles
 
 ;; Author: Craig Niles <niles.c at gmail.com>
+;; Maintainer: Craig Niles <niles.c at gmail.com>
 ;; URL: https://github.com/cniles/axe
 
 ;; This file is NOT part of GNU Emacs.
@@ -22,12 +23,12 @@
 
 ;;; Commentary:
 
-;;; Defines variables and functions to provide easy and uniform
-;;; integration of AWS APIs responses into the AXE Emacs buffer mode.
-;;; Chiefly, it provides a pattern for handling paged AWS API
-;;; responses.  It makes concessions for automatically extracting the
-;;; response next token from varying response content types, e.g. XML
-;;; or JSON and re-invoking the API with the next token.
+;; Defines variables and functions to provide easy and uniform
+;; integration of AWS APIs responses into the AXE Emacs buffer mode.
+;; Chiefly, it provides a pattern for handling paged AWS API
+;; responses.  It makes concessions for automatically extracting the
+;; response next token from varying response content types, e.g. XML
+;; or JSON and re-invoking the API with the next token.
 
 ;;; Code:
 
@@ -35,9 +36,9 @@
 
 (defvar axe-buffer-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "n") 'axe--buffer-follow-next)
-    (define-key map (kbd "N") 'axe--buffer-auto-follow)
-    (define-key map (kbd "s") 'axe--buffer-stop-auto-follow)
+    (define-key map (kbd "n") 'axe-buffer--follow-next)
+    (define-key map (kbd "N") 'axe-buffer--auto-follow)
+    (define-key map (kbd "s") 'axe-buffer--stop-auto-follow)
     map)
   "AWS Interactive Buffer key map.")
 
@@ -57,7 +58,7 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
 (defvar-local axe-buffer-auto-follow-delay nil
   "Variable setting the delay (in seconds) between AWS API requests when auto-following.")
 
-(defun axe--buffer-follow-next ()
+(defun axe-buffer--follow-next ()
   "Call axe-buffer-next-fn for current buffer."
   (interactive)
   (if (not (functionp axe-buffer-next-fn))
@@ -66,7 +67,7 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
       (setq axe-buffer-next-fn ())
       (funcall func))))
  
-(cl-defun axe--buffer-auto-follow (&optional (delay 5.0))
+(cl-defun axe-buffer--auto-follow (&optional (delay 5.0))
   "Enables auto-follow in the current buffer."
   (interactive)
   (if (not (functionp axe-buffer-next-fn))
@@ -76,14 +77,41 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
       (setq-local axe-buffer-auto-follow-delay delay)
       (funcall axe-buffer-next-fn))))
 
-(cl-defun axe--buffer-stop-auto-follow ()
+(cl-defun axe-buffer--stop-auto-follow ()
   "Disables auto-follow in the current buffer."
   (interactive)
   (if (null axe-buffer-auto-follow)
       (message "Auto-follow already disabled for buffer.")
     (setq-local axe-buffer-auto-follow nil)))
 
-(cl-defun axe--buffer-list (api-fn buffer-name list-fn api-fn-args keybindings-fn insert-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
+(cl-defun axe-buffer--make-next-handler (success api-fn params next-token-fn)
+  "Make a lambda that handles paged API responses.
+
+Wraps SUCCESS in a function that subsequently invokes an AWS API
+function if a next token is provided.  If the API response
+it receives contains a next token it will make another next
+handler and apply API-FN to the values provided in PARAMS with
+the received next token.  The next token value is read from the
+API response using the symbol defined by TOKEN-PROP.
+
+API-FN args must follow the following form:
+
+    (success [required args] &key next-token [optional key args])
+
+It is up to the caller to ensure required arguments are provided
+in PARAMS."
+  (cl-function
+   (lambda (&key data response &allow-other-keys)
+     (let ((next-token (if (functionp next-token-fn) (funcall next-token-fn :data data :response response))))
+       (funcall
+	success :data data :response response
+	:next-fn (if (not (null next-token))
+		     (lambda ()
+		       (apply api-fn
+			      (axe-buffer--make-next-handler success api-fn params next-token-fn)
+			      (append params (list :next-token next-token))))))))))
+
+(cl-defun axe-buffer-list (api-fn buffer-name list-fn api-fn-args keybindings-fn insert-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
   "Displays items returned by consecutive responses from API-FN.
 
 Contents are displayed in the buffer BUFFER-NAME.  The contents
@@ -119,7 +147,7 @@ AUTO-FOLLOW and AUTO-FOLLOW-DELAY key parameters"
       (setq buffer-read-only t))
     (apply
      api-fn
-     (make-next-handler
+     (axe-buffer--make-next-handler
       (cl-function
        (lambda (&key response data next-fn &allow-other-keys)
 	 (with-current-buffer output-buffer

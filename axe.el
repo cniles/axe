@@ -1,9 +1,12 @@
-;;; axe -- AWS Extensions for Emacs
+;;; axe.el --- AWS Extensions -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 Craig Niles
 
 ;; Author: Craig Niles <niles.c at gmail.com>
+;; Maintainer: Craig Niles <niles.c at gmail.com>
 ;; URL: https://github.com/cniles/axe
+;; Package-Requires: ((emacs "25.1") (request "0.3.2") (hmac "1.0"))
+;; Version: 0.0.1
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -25,6 +28,7 @@
 ;; Provides package-wide variable definitions
 
 ;;; Code:
+
 (defvar axe-regions
   '((us-east-2 . "US East (Ohio)")
     (us-east-1 . "US East (N. Virginia)")
