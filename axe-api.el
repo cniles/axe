@@ -312,7 +312,7 @@ SERVICE-CODE.  SUCCESS.  &KEY."
       ;; Setting User-Agent and Accept to empty string keeps curl from including these headers
       ;; Including them will prompt an error as they wouldn't have been included in the
       ;; canonical request signing.
-      :headers (append headers (list authorization-header '("User-Agent" . "") '("Accept" . "")) ())
+      :headers (append headers (list authorization-header '("User-Agent" . "") '("Accept" . "") '("Accept-Encoding" . "") '("Content-Type" . "")) ())
       :parser parser
       :type method-type
       :data request-payload
