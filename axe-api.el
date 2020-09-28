@@ -285,7 +285,8 @@ secret."
   "Make a signed AWS API sigv4 request.
 
 SERVICE-CODE.  SUCCESS.  &KEY."
-  (let* ((creds (axe-api--get-credentials))
+  (with-coding-priority '(iso-8859-1)
+    (let* ((creds (axe-api--get-credentials))
 	 (request-date-time (current-time))
 	 (amz-date-header (cons "X-Amz-Date" (axe-api--time-to-iso8601-string request-date-time)))
 	 (content-length-header (cons "Content-Length" (int-to-string (length request-payload))))
@@ -325,7 +326,7 @@ SERVICE-CODE.  SUCCESS.  &KEY."
       :success (cl-function
 		(lambda (&key data response &allow-other-keys)
 		  (axe-util--log "Successful API response.")
-		  (funcall success :data data :response response))))))
+		  (funcall success :data data :response response)))))))
 
 (provide 'axe-api)
 ;;; axe-api.el ends here
