@@ -196,11 +196,12 @@ K-SECRET is the secret access key.  REQUEST-DATE-TIME is a
 timestamp as returned by CURRENT-TIME.  REGION-CODE is an AWS API
 region code (e.g. `us-east-1`.  SERVICE-CODE is an AWS API
 service code, sush as `logs` or `lambda`."
-  (let* ((k-date (hmac 'sha256 (concat "AWS4" k-secret) (axe-api--time-to-yyyymmdd-format request-date-time) t))
-	 (k-region (hmac 'sha256 k-date (symbol-name region-code) t))
-	 (k-service (hmac 'sha256 k-region (symbol-name service-code) t))
-	 (k-signing (hmac 'sha256 k-service "aws4_request" t)))
-    k-signing))
+  (with-coding-priority '(iso-8859-1)
+    (let* ((k-date (hmac 'sha256 (concat "AWS4" k-secret) (axe-api--time-to-yyyymmdd-format request-date-time) t))
+	   (k-region (hmac 'sha256 k-date (symbol-name region-code) t))
+	   (k-service (hmac 'sha256 k-region (symbol-name service-code) t))
+	   (k-signing (hmac 'sha256 k-service "aws4_request" t)))
+      k-signing)))
 
 (defun axe-api--sigv4-make-authorization-header-value (algorithm access-key-id secret-access-key region-code service-code path-segments query-params headers request-payload request-date-time method-type)
   "Create a sigv4 authorization header value.
@@ -218,7 +219,7 @@ the full AWS API sigv4 authorization header.."
 		       region-code
 		       service-code))
 	 (signed-headers (axe-api--sigv4-signed-headers-from-headers headers))
-	 (signature (hmac 'sha256 signing-key string-to-sign)))
+	 (signature (with-coding-priority '(iso-8859-1) (hmac 'sha256 signing-key string-to-sign))))
     (format "%s Credential=%s/%s, SignedHeaders=%s, Signature=%s"
 	    algorithm access-key-id
 	    (axe-api--sigv4-credential-scope-value request-date-time region-code service-code)
@@ -285,7 +286,6 @@ secret."
   "Make a signed AWS API sigv4 request.
 
 SERVICE-CODE.  SUCCESS.  &KEY."
-  (with-coding-priority '(iso-8859-1)
     (let* ((creds (axe-api--get-credentials))
 	 (request-date-time (current-time))
 	 (amz-date-header (cons "X-Amz-Date" (axe-api--time-to-iso8601-string request-date-time)))
@@ -326,7 +326,7 @@ SERVICE-CODE.  SUCCESS.  &KEY."
       :success (cl-function
 		(lambda (&key data response &allow-other-keys)
 		  (axe-util--log "Successful API response.")
-		  (funcall success :data data :response response)))))))
+		  (funcall success :data data :response response))))))
 
 (provide 'axe-api)
 ;;; axe-api.el ends here

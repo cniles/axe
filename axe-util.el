@@ -93,5 +93,9 @@ value."
     (goto-char (point-max))
     (insert (format "%s\n\n" s))))
 
+(defun axe-util--hexify (str)
+  "Hex-encode and return the string STR."
+  (mapconcat (lambda (c) (format "%X" c)) str ""))
+
 (provide 'axe-util)
 ;;; axe-util.el ends here
