@@ -46,7 +46,7 @@
 (cl-defun axe-s3--list-objects-v2 (success bucket &key next-token delimiter encoding-type fetch-owner max-keys prefix start-after request-payer)
   "Call SUCCESS with result of List Object V2 on BUCKET.
 Optional parameters NEXT-TOKEN, DELIMITER, ENCODING-TYPE,
-MAX-KEYS, PREFIX and START-AFTER can also be specifiied.
+MAX-KEYS, PREFIX and START-AFTER can also be specified.
 NEXT-TOKEN corresponds to the `continuation-token` request
 parameter."
   (axe-api-request

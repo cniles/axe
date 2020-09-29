@@ -53,7 +53,7 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
   "Timer object for a pending invocation of next-fn.")
 
 (defvar-local axe-buffer-auto-follow nil
-  "Variable controlling whether to automaticallty request the next AWS API resposne.")
+  "Variable controlling whether to automatically request the next AWS API response.")
 
 (defvar-local axe-buffer-auto-follow-delay nil
   "Variable setting the delay (in seconds) between AWS API requests when auto-following.")
@@ -116,7 +116,7 @@ in PARAMS."
 
 Contents are displayed in the buffer BUFFER-NAME.  The contents
 of the buffer will be erased and its minor mode changed.  Each
-response should be unmarshalable into a list that is returned by
+response should be unmarshallable into a list that is returned by
 LIST-FN.  Each LIST-FN result is mapped with INSERT-FN.
 INSERT-FN is expected to perform some insert option into the
 current buffer (the output buffer created by the function).
