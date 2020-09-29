@@ -55,6 +55,6 @@ with API responses.
 
 ## SSL errors from periods in bucket names
 
-This is a known service stemming from the bucket name forming an
+This is a known issue with the service stemming from the bucket name forming an
 additional sub-domain.  It will make cURL burp a certificate error. A
 work-around needs to be identified.
