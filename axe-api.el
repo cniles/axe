@@ -148,7 +148,7 @@ name and the cdr its respective value."
 METHOD-TYPE is the HTTP request type (e.g. GET, PUT, etc).
 PATH-SEGMENTS is a list of path parts that would normally be
 separated by forward slashes.  QUERY-PARAMS is an alist of all
-queryh parameter values.  HEADERS is an alist of all header
+query parameter values.  HEADERS is an alist of all header
 values.  REQUEST-PAYLOAD should be a string containing the
 request body."
   (mapconcat 'identity (list method-type
@@ -195,7 +195,7 @@ axe-api--sigv4-hash."
 K-SECRET is the secret access key.  REQUEST-DATE-TIME is a
 timestamp as returned by CURRENT-TIME.  REGION-CODE is an AWS API
 region code (e.g. `us-east-1`.  SERVICE-CODE is an AWS API
-service code, sush as `logs` or `lambda`."
+service code, such as `logs` or `lambda`."
   (with-coding-priority '(iso-8859-1)
     (let* ((k-date (hmac 'sha256 (concat "AWS4" k-secret) (axe-api--time-to-yyyymmdd-format request-date-time) t))
 	   (k-region (hmac 'sha256 k-date (symbol-name region-code) t))
@@ -242,7 +242,7 @@ the full AWS API sigv4 authorization header.."
     (cons (car match) (nth 1 match))))
 
 (defun axe-api--parse-credential-file ()
-  "Read the contentds of the AWS crednetial file.
+  "Read the contents of the AWS credential file.
 
 Returns an alist of profile names mapped to their key and
 secret."

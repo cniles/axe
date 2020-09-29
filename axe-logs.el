@@ -37,7 +37,7 @@
 (cl-defun axe-logs--describe-log-groups (success &key next-token prefix limit)
   "Request log groups using PREFIX and NEXT-TOKEN.
 
-Provide results to callback function SUCCESS on comletion.  Both
+Provide results to callback function SUCCESS on completion.  Both
 can be specified nil to omit."
   (axe-api-request
    (axe-api-domain 'logs axe-region)
