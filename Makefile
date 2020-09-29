@@ -11,7 +11,7 @@ build: dependencies
 
 test: build
 	@echo " * Running axe tests * "
-	@$(CASK_COMMAND) emacs -Q -batch \
+	@EMACSLOADPATH=.: $(CASK_COMMAND) emacs -Q -batch \
 		-l axe-api-test.el \
 		-f ert-run-tests-batch-and-exit
 
