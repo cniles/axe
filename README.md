@@ -2,6 +2,13 @@
 
 AWS eXtensions for Emacs
 
+# Note:
+
+The hmac dependency has pending a PR to resolve an issue that
+precludes this package from working.
+
+See: https://github.com/grimnebulin/emacs-hmac
+
 # Introduction
 axe lets you use Emacs as a frontend for interacting with AWS
 resources.  It makes available a number of tasks, such as listing
