@@ -6,8 +6,8 @@ AWS eXtensions for Emacs
 
 # Note:
 
-The hmac dependency has pending a PR to resolve an issue that
-precludes this package from working.
+The hmac dependency has a pending PR to resolve an issue that
+precludes this package from working out-of-the-box.
 
 See: https://github.com/grimnebulin/emacs-hmac
 
