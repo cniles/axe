@@ -2,12 +2,12 @@ CASK_COMMAND ?= cask
 
 dependencies:
 	@echo " * Install and update axe dependencies * "
-	cask install
-	cask update
+	$(CASK_COMMAND) install
+	$(CASK_COMMAND) update
 
 build: dependencies
 	@echo " * Compiling elc * "
-	cask build
+	$(CASK_COMMAND) build
 
 test: build
 	@echo " * Running axe tests * "
@@ -17,11 +17,11 @@ test: build
 
 dist: dependencies build test
 	@echo " * Packaging axe * "
-	cask package archive_contents/
+	$(CASK_COMMAND) package archive_contents/
 
 clean:
 	@echo " * Cleaning files * "
 	rm -rf dist
-	cask clean-elc
+	$(CASK_COMMAND) clean-elc
 
 .PHONY: dependencies build test clean

@@ -1,0 +1,26 @@
+language: python
+python: 2.7
+dist: xenial
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.cask
+    - $HOME/.evm
+    - $HOME/.emacs.d
+
+env:
+  global:
+    - PATH=$HOME/local/bin:$HOME/local/evm/bin:$HOME/local/cask/bin:$PATH
+
+before_install:
+  - sh tools/install-evm.sh
+  - evm config path /tmp
+  - evm install emacs-25.1-travis --use --skip
+  - sh tools/install-cask.sh
+  - cask --version
+  - emacs --version
+  - curl --version
+
+script:
+  - make test
