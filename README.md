@@ -17,8 +17,9 @@ resources.  It makes available a number of tasks, such as listing
 buckets, invoking lambdas and tailing logs, ergonomically available
 through emacs.
 
-The package relies on the AWS APIs, rather than the CLI.  Their
-reasoning behind this design decision (rather than depending on the AWS CLI) are:
+The package relies on the AWS APIs, rather than the CLI.  The
+reasoning behind this design decision (rather than depending on the
+AWS CLI) are:
 
 0. The AWS CLI utility is no longer a runtime dependency.
 1. The AWS CLI utility v1 and v2 have version differences
