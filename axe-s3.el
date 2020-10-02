@@ -108,6 +108,19 @@ CreateBucket documentation. See
    :parser #'axe-util--xml-read
    :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
 
+(cl-defun axe-s3--get-object (success bucket key)
+  "Download the contents of an object from S3.
+Downloads the object identified by KEY from BUCKET.  See
+`https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html'"
+  (axe-api-request
+   (format "%s.s3.amazonaws.com" bucket)
+   's3
+   success
+   "GET"
+   :parser #'buffer-string
+   :path-segments `(,key)
+   :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
+
 (cl-defun axe-s3--insert-bucket (bucket &key &allow-other-keys)
   "Insert the details of BUCKET into the current buffer."
   (let ((inhibit-read-only t))
