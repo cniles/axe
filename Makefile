@@ -15,6 +15,10 @@ test: build
 		-l axe-api-test.el \
 		-f ert-run-tests-batch-and-exit
 
+lint: build
+	@echo " * Running package-lint * "
+	sh lint.sh
+
 dist: dependencies build test
 	@echo " * Packaging axe * "
 	$(CASK_COMMAND) package archive_contents/
