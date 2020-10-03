@@ -1,4 +1,4 @@
-;;; axe-api-test.el --- Tests for axe-api.el -*- lexical-binding: t; -*-
+;;; axe-api-test.el --- Tests for axe-api.el -*- lexical-binding: t; package-lint-main-file: "axe.el"; -*-
 
 ;;; Commentary:
 

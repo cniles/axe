@@ -1,4 +1,4 @@
-;;; axe-lambda.el --- Package for interacting with AWS Lambda -*- lexical-binding: t -*-
+;;; axe-lambda.el --- Package for interacting with AWS Lambda -*- lexical-binding: t; package-lint-main-file: "axe.el"; -*-
 
 ;; Copyright (C) 2020 Craig Niles
 

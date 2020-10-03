@@ -1,4 +1,4 @@
-;;; axe-api.el --- Library for signing & making AWS API HTTP requests -*- lexical-binding: t; -*-
+;;; axe-api.el --- Library for signing & making AWS API HTTP requests -*- lexical-binding: t; package-lint-main-file: "axe.el"; -*-
 
 ;; Copyright (C) 2020 Craig Niles
 

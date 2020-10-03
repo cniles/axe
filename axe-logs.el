@@ -1,4 +1,4 @@
-;;; axe-logs.el --- Functions for working with AWS logs -*- lexical-binding: t; -*-
+;;; axe-logs.el --- Functions for working with AWS logs -*- lexical-binding: t; package-lint-main-file: "axe.el"; -*-
 
 ;; Copyright (C) 2020 Craig Niles
 

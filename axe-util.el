@@ -1,4 +1,4 @@
-;;; axe-util.el --- Utility functions -*- lexical-binding: t -*-
+;;; axe-util.el --- Utility functions -*- lexical-binding: t; package-lint-main-file: "axe.el"; -*-
 
 ;; Copyright (C) 2020 Craig Niles
 
@@ -27,6 +27,7 @@
 
 ;;; Code:
 
+(require 'axe)
 (require 'json)
 (require 's)
 (require 'cl-lib)

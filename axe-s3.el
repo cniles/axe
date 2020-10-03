@@ -1,4 +1,4 @@
-;;; axe-s3.el --- S3 API and interactions -*- lexical-binding: t -*-
+;;; axe-s3.el --- S3 API and interactions -*- lexical-binding: t; package-lint-main-file: "axe.el" -*-
 
 ;; Copyright (C) 2020 Craig Niles
 

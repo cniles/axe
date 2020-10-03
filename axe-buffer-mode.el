@@ -1,4 +1,4 @@
-;;; axe-buffer-mode.el --- Buffer mode for displaying AWS API responses -*- lexical-binding: t; -*-
+;;; axe-buffer-mode.el --- Buffer mode for displaying AWS API responses -*- lexical-binding: t; package-lint-main-file: "axe.el"; -*-
 
 ;; Copyright (C) 2020 Craig Niles
 
