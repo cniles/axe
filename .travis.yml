@@ -9,7 +9,7 @@ addons:
       - gnutls-bin
       - sharutils
       - git
-      - gnpug2
+      - gnupg2
 
 cache:
   directories:
