@@ -77,7 +77,7 @@
   (let ((home (getenv (cond ((eql system-type 'windows-nt) "USERPROFILE")
 			    (t "HOME")))))
     (expand-file-name "credentials" (expand-file-name ".aws" home)))
-  "Path the .aws/credentials file.")
+  "Path to the default AWS credentials file.")
 
 (provide 'axe)
 ;;; axe.el ends here
