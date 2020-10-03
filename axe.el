@@ -5,7 +5,7 @@
 ;; Author: Craig Niles <niles.c at gmail.com>
 ;; Maintainer: Craig Niles <niles.c at gmail.com>
 ;; URL: https://github.com/cniles/axe
-;; Package-Requires: ((emacs "25.1") (request "0.3.2") (hmac "1.0") (s "1.12.0") (xmlgen "0.5"))
+;; Package-Requires: ((emacs "25.1") (request "0.3.2") (s "1.12.0") (xmlgen "0.5"))
 ;; Version: 0.0.1
 
 ;; This file is NOT part of GNU Emacs.
