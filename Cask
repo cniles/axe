@@ -1,3 +1,5 @@
+;; -*- mode: lisp -*-
+
 (source gnu)
 (source melpa)
 
@@ -9,4 +11,5 @@
 (depends-on "s")
 
 (development
+ (depends-on "package-lint")
  (depends-on "ert-runner"))
