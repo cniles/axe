@@ -3,6 +3,14 @@ python: 2.7
 dist: xenial
 sudo: false
 
+addons:
+  apt:
+    packages:
+      - gnutls-bin
+      - sharutils
+      - git
+      - gnpug2
+
 cache:
   directories:
     - $HOME/.cask
