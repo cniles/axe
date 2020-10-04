@@ -19,7 +19,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with axe.  If not, see <http://www.gnu.org/licenses/>.
+;; along with axe.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -68,7 +68,9 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
       (funcall func))))
  
 (cl-defun axe-buffer--auto-follow (&optional (delay 5.0))
-  "Enables auto-follow in the current buffer."
+  "Enable auto-follow in the current buffer.
+The next request is made after DELAY seconds.  If not specified
+the default is 5 seconds."
   (interactive)
   (if (not (functionp axe-buffer-next-fn))
       (message "Cannot auto follow without a next function.")
@@ -78,7 +80,7 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
       (funcall axe-buffer-next-fn))))
 
 (cl-defun axe-buffer--stop-auto-follow ()
-  "Disables auto-follow in the current buffer."
+  "Disable auto-follow in the current buffer."
   (interactive)
   (if (null axe-buffer-auto-follow)
       (message "Auto-follow already disabled for buffer.")
@@ -88,11 +90,11 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
   "Make a lambda that handles paged API responses.
 
 Wraps SUCCESS in a function that subsequently invokes an AWS API
-function if a next token is provided.  If the API response
-it receives contains a next token it will make another next
-handler and apply API-FN to the values provided in PARAMS with
-the received next token.  The next token value is read from the
-API response using the symbol defined by TOKEN-PROP.
+function if a next token is provided.  If the API response it
+receives contains a next token it will make another next handler
+and apply API-FN to the values provided in PARAMS with the
+received next token.  The next token value is read from the
+response using the delegate NEXT-TOKEN-FN.
 
 API-FN args must follow the following form:
 
