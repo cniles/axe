@@ -19,7 +19,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with axe.  If not, see <http://www.gnu.org/licenses/>.
+;; along with axe.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -53,7 +53,9 @@ can be specified nil to omit."
 			   (cons "logGroupNamePrefix" prefix)))))
 
 (cl-defun axe-logs--describe-log-streams (success log-group-name &key next-token descending limit log-stream-name-prefix order-by)
-  "Describe log streams for LOG-GROUP-NAME."
+  "Describe log streams for LOG-GROUP-NAME and invoke SUCCESS with the result.
+NEXT-TOKEN, DESCENDING, LIMIT, LOG-STREAM-NAME-PREFIX and
+ORDER-BY correspond to AWS API parameters."
   (axe-api-request
    (axe-api-domain 'logs axe-region)
    'logs
@@ -71,7 +73,10 @@ can be specified nil to omit."
 			   (cons "orderBy" order-by)))))
 
 (cl-defun axe-logs--get-log-events (success log-group-name log-stream-name &key next-token end-time limit start-from-head start-time)
-  "Get log events for stream with name LOG-STREAM-NAME of group LOG-GROUP-NAME"
+  "Get log events for stream with name LOG-STREAM-NAME of group LOG-GROUP-NAME.
+Callback SUCCESS is invoked with the result.  NEXT-TOKEN,
+END-TIME, LIMIT, START-FROM-HEAD, and START-TIME correspond to
+AWS API params."
   (axe-api-request
    (axe-api-domain 'logs axe-region)
    'logs
@@ -135,7 +140,7 @@ displayed."
 
 ;;;###autoload
 (cl-defun axe-logs-get-log-events (log-group-name log-stream-name &key auto-follow (auto-follow-delay 5.0))
-  "Display log events for stream with name LOG-STREAM-NAME in log group LOG-GROUP-NAME.
+  "Display log events for stream with name LOG-STREAM-NAME in LOG-GROUP-NAME.
 Specifying FOLLOW-NEXT as non-nil will start the buffer in follow
 mode.  In follow mode the next API request will automatically be
 executed after FOLLOW-DELAY seconds (default 5 seconds)."
