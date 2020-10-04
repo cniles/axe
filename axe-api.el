@@ -19,7 +19,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with axe.  If not, see <http://www.gnu.org/licenses/>.
+;; along with axe.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -55,8 +55,8 @@
 
 (defun axe-api--sigv4-canonical-uri-from-path (path-segments)
   "Forms canonical uri from PATH-SEGMENTS."
-  (let ((path (mapconcat 'axe-api--double-uri-encode (cons "" (append path-segments ())) "/")))
-    (if (or (eq nil path) (equal "" path)) "/" path)))
+  (let ((path (mapconcat #'axe-api--double-uri-encode (cons "" (append path-segments ())) "/")))
+    (if (or (null path) (equal "" path)) "/" path)))
 
 (defun axe-api--sort-query-params (query-params)
   "Sort and return QUERY-PARAMS.
@@ -79,7 +79,7 @@ keys that are the same they are sorted by respective value."
   "Return the canonical forms of QUERY-PARAMS from URI filename part (path + query)."
   (mapconcat
    (lambda (param) (format "%s=%s" (car param) (cdr param)))
-   (axe-api--sort-query-params (mapcar 'axe-api--uri-encode-query-param query-params)) "&"))
+   (axe-api--sort-query-params (mapcar #'axe-api--uri-encode-query-param query-params)) "&"))
 
 (defun axe-api--header-value-trimall (header-value)
   "Perform trimall operation as described in the AWS sigv4 implementation guide.
@@ -97,7 +97,7 @@ replace \s+ with ' ' (single space)."
 
 Header names must have been normalized before hand.  Header names
 are compared using equal."
-  (mapcar 'cdr (seq-filter (lambda (c) (equal (car c) header-name)) headers)))
+  (mapcar #'cdr (seq-filter (lambda (c) (equal (car c) header-name)) headers)))
 
 (defun axe-api--normalize-headers (headers)
   "Perform normalization on header names and values in HEADERS."
@@ -117,7 +117,7 @@ element is a list whose car is the header name, and the cdr is a
 list of all values from HEADERS that fall under that header
 name."
   (let* ((normalized-headers (axe-api--normalize-headers headers))
-	 (header-names (delete-dups (sort (mapcar 'car normalized-headers) 'string<))))
+	 (header-names (delete-dups (sort (mapcar #'car normalized-headers) 'string<))))
     (mapcar (lambda (header-name)
 	      (cons
 	       header-name (axe-api--header-values-from-header-name
@@ -135,12 +135,12 @@ name and the cdr its respective value."
      (let ((header-name (car header-value-list))
 	   (header-values (cdr header-value-list)))
        (format "%s:%s\n" header-name
-	       (mapconcat 'identity header-values ","))))
+	       (mapconcat #'identity header-values ","))))
    (axe-api--header-values-by-name headers) ""))
 
 (defun axe-api--sigv4-signed-headers-from-headers (headers)
   "Return list of signed header names from HEADERS separated by ';'."
-  (mapconcat 'car (axe-api--header-values-by-name headers) ";"))
+  (mapconcat #'car (axe-api--header-values-by-name headers) ";"))
 
 (defun axe-api--sigv4-canonical-request (method-type path-segments query-params headers request-payload)
   "Create AWS API Canonical request from provided parameters.
@@ -151,7 +151,7 @@ separated by forward slashes.  QUERY-PARAMS is an alist of all
 query parameter values.  HEADERS is an alist of all header
 values.  REQUEST-PAYLOAD should be a string containing the
 request body."
-  (mapconcat 'identity (list method-type
+  (mapconcat #'identity (list method-type
 			     (axe-api--sigv4-canonical-uri-from-path path-segments)
 			     (axe-api--sigv4-canonical-query-from-query-params query-params)
 			     (axe-api--sigv4-canonical-headers-from-headers headers)
@@ -184,7 +184,7 @@ such as `logs` or `lambda`.  HASHED-CANONICAL-REQUEST is the
 hashed hash canonical request as defined in the AWS API sigv4
 implementation guide.  See axe-api--sigv4-canonical-request and
 axe-api--sigv4-hash."
-  (mapconcat 'identity (list algorithm
+  (mapconcat #'identity (list algorithm
 			     (axe-api--time-to-iso8601-string request-date-time)
 			     (axe-api--sigv4-credential-scope-value request-date-time region-code service-code)
 			     hashed-canonical-request) "\n"))
@@ -284,8 +284,12 @@ secret."
 				(headers ())
 				(parser 'buffer-string))
   "Make a signed AWS API sigv4 request.
+HOST should be the domain of the AWS API, usually formed by a
+call to `axe-api-domain'.  SERVICE-CODE is the AWS API service
+code, e.g. lambda or s3.  METHOD-TYPE is the HTTP method to use
+for the API request, such as GET or POST.  Upon a successful
+response, the callback SUCCESS will be invoked."
 
-SERVICE-CODE.  SUCCESS.  &KEY."
     (let* ((creds (axe-api--get-credentials))
 	 (request-date-time (current-time))
 	 (amz-date-header (cons "X-Amz-Date" (axe-api--time-to-iso8601-string request-date-time)))
