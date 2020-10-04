@@ -19,7 +19,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with axe.  If not, see <http://www.gnu.org/licenses/>.
+;; along with axe.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -46,9 +46,9 @@
 (cl-defun axe-s3--list-objects-v2 (success bucket &key next-token delimiter encoding-type fetch-owner max-keys prefix start-after request-payer)
   "Call SUCCESS with result of List Object V2 on BUCKET.
 Optional parameters NEXT-TOKEN, DELIMITER, ENCODING-TYPE,
-MAX-KEYS, PREFIX and START-AFTER can also be specified.
-NEXT-TOKEN corresponds to the `continuation-token` request
-parameter."
+MAX-KEYS, FETCH-OWNER, PREFIX, START-AFTER and REQUEST-PAYER
+correspond to AWS API parameters.  NEXT-TOKEN corresponds to the
+`continuation-token' request parameter."
   (axe-api-request
    (format "%s.s3.amazonaws.com" bucket) 's3
    success
@@ -66,14 +66,14 @@ parameter."
 				    ("x-amz-request-payer" . ,request-payer)))))
 
 (cl-defun axe-s3--create-bucket (success bucket &key acl grant-full-control grant-read grant-read-acp grant-write grant-write-acp object-lock-enabled-for-bucket location-constraint)
-  "Create bucket with name BUCKET.
+  "Create bucket with name BUCKET invoking callback SUCCESS with the result.
 ACL, GRANT-FULL-CONTROL GRANT-READ GRANT-READ-ACP GRANT-WRITE
 GRANT-WRITE-ACP OBJECT-LOCK-ENABLED-FOR-BUCKET and
 LOCATION-CONSTRAINT parameters behave as described in API
-CreateBucket documentation. See
+CreateBucket documentation.  See:
 `https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html'"
   (let ((payload (if location-constraint
-		     (xmlgen `(CreateBucketConfiguration :xmlns "http://s3.amazonaws.com/doc/2006-03-01/"
+		     (xmlgen `(CreateBucketConfiguration :xmlns "https://s3.amazonaws.com/doc/2006-03-01/"
 							 (LocationConstraint location-constraint)))
 		   "")))
     (axe-api-request
@@ -94,11 +94,11 @@ CreateBucket documentation. See
      :request-payload payload)))
 
 (cl-defun axe-s3--delete-bucket (success bucket)
-  "Create bucket with name BUCKET.
+  "Create bucket with name BUCKET invoking callback SUCCESS with the result.
 ACL, GRANT-FULL-CONTROL GRANT-READ GRANT-READ-ACP GRANT-WRITE
 GRANT-WRITE-ACP OBJECT-LOCK-ENABLED-FOR-BUCKET and
 LOCATION-CONSTRAINT parameters behave as described in API
-CreateBucket documentation. See
+CreateBucket documentation.  See:
 `https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html'"
   (axe-api-request
    (format "%s.s3.amazonaws.com" bucket)
@@ -109,8 +109,8 @@ CreateBucket documentation. See
    :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
 
 (cl-defun axe-s3--get-object (success bucket key)
-  "Download the contents of an object from S3.
-Downloads the object identified by KEY from BUCKET.  See
+  "Download the contents of object specified by KEY from BUCKET.
+Callback SUCCESS is invoked with the response.  See:
 `https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html'"
   (axe-api-request
    (format "%s.s3.amazonaws.com" bucket)
@@ -182,7 +182,7 @@ Downloads the object identified by KEY from BUCKET.  See
   "Create BUCKET."
   (interactive "sBucket: ")
   (axe-s3--create-bucket
-   (cl-function (lambda (&key &allow-other-keys) (message (format "Successfully created bucket %s" bucket))))
+   (cl-function (lambda (&key &allow-other-keys) (message "Successfully created bucket %s" bucket)))
    bucket))
 
 ;;;###autoload
@@ -190,7 +190,7 @@ Downloads the object identified by KEY from BUCKET.  See
   "Delete BUCKET."
   (interactive "sBucket: ")
   (axe-s3--delete-bucket
-   (cl-function (lambda (&key data &allow-other-keys) (axe-util--log data) (message (format "Successfully deleted bucket %s" bucket))))
+   (cl-function (lambda (&key data &allow-other-keys) (axe-util--log data) (message "Successfully deleted bucket %s" bucket)))
    bucket))
 
 (provide 'axe-s3)
