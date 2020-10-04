@@ -19,7 +19,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with axe.  If not, see <http://www.gnu.org/licenses/>.
+;; along with axe.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -76,9 +76,9 @@ See `https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html'."
     (newline)))
 
 (cl-defun axe-lambda--insert-invoke-response (data &key window response &allow-other-keys)
-  "Insert response from invoking a Lambda.
-
-Displays tailed logs in an auxiliary buffer."
+  "Insert response DATA from invoking a Lambda function into WINDOW.
+Displays logs from RESPONSE in an auxiliary buffer, contained in
+X-Amz-Log-Result."
   (with-selected-window window
     (with-current-buffer (get-buffer-create (format "%s%s*" (buffer-name) "logs*"))
       (display-buffer-below-selected (current-buffer) '((window-height . 20)))
