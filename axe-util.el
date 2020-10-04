@@ -18,7 +18,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with axe.  If not, see <http://www.gnu.org/licenses/>.
+;; along with axe.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -56,7 +56,7 @@ value."
 
 (defun axe-util--format-with-alist (string alst &rest symbols)
   "Like `format` but derive placeholder values in STRING from ALST using SYMBOLS."
-  (apply 'format string (mapcar (lambda (sym) (alist-get sym alst)) symbols)))
+  (apply #'format string (mapcar (lambda (sym) (alist-get sym alst)) symbols)))
 
 (defun axe-util--xml-node-to-alist (node)
   "Return a list from NODE where all its children are alist conss'."
