@@ -35,7 +35,7 @@
   "List functions in the account and call SUCCESS when complete.
 
 FUNCTION-VERSION, MASTER-REGION and MAX-ITEMS all correspond to
-AWS API request parameters. NEXT-TOKEN is the MARKER parameter."
+AWS API request parameters.  NEXT-TOKEN is the MARKER parameter."
   (axe-api-request
    (axe-api-domain 'lambda axe-region)
    'lambda
