@@ -35,9 +35,10 @@
 ;; Check that libxml2 is available and display a warning if not.
 (if (null (if (fboundp 'libxml-available-p)
 	      (libxml-available-p)
-	    (with-temp-buffer
+	    (and (fboundp 'libxml-parse-xml-region)
+		 (with-temp-buffer
 	      (insert "<body></body>")
-	      (libxml-parse-html-region (point-min) (point-max)))))
+	      (libxml-parse-xml-region (point-min) (point-max))))))
     (display-warning :error "libxml2 not compiled with Emacs! Some functionality may be unavailable."))
 
 (defun axe-util--now-millis ()
