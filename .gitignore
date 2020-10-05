@@ -3,3 +3,4 @@
 env.el
 .cask/
 *.elc
+dist/
