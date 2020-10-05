@@ -4,13 +4,6 @@
 
 AWS eXtensions for Emacs
 
-# Note:
-
-The hmac dependency has a pending PR to resolve an issue that
-precludes this package from working out-of-the-box.
-
-See: https://github.com/grimnebulin/emacs-hmac
-
 # Introduction
 axe lets you use Emacs as a frontend for interacting with AWS
 resources.  It makes available a number of tasks, such as listing
@@ -59,12 +52,3 @@ with API responses.
    in an API response, the next response will be requested and
    displayed after a configured delay.
 2. `s`: Stop auto-following.
-
-
-# Known issues
-
-## SSL errors from periods in bucket names
-
-This is a known issue with the service stemming from the bucket name forming an
-additional sub-domain.  It will make cURL burp a certificate error. A
-work-around needs to be identified.
