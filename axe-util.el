@@ -37,8 +37,8 @@
 	      (libxml-available-p)
 	    (and (fboundp 'libxml-parse-xml-region)
 		 (with-temp-buffer
-	      (insert "<body></body>")
-	      (libxml-parse-xml-region (point-min) (point-max))))))
+		   (insert "<body></body>")
+		   (libxml-parse-xml-region (point-min) (point-max))))))
     (display-warning :error "libxml2 not compiled with Emacs! Some functionality may be unavailable."))
 
 (defun axe-util--now-millis ()
