@@ -3,7 +3,7 @@
 (source gnu)
 (source melpa)
 
-(package "axe" "0.0.1" "Emacs frontend to AWS")
+(package-file "axe.el")
 
 (depends-on "hmac")
 (depends-on "request")
