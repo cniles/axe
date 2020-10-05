@@ -32,6 +32,14 @@
 (require 's)
 (require 'cl-lib)
 
+;; Check that libxml2 is available and display a warning if not.
+(if (null (if (fboundp 'libxml-available-p)
+	      (libxml-available-p)
+	    (with-temp-buffer
+	      (insert "<body></body>")
+	      (libxml-parse-html-region (point-min) (point-max)))))
+    (display-warning :error "libxml2 not compiled with Emacs! Some functionality may be unavailable."))
+
 (defun axe-util--now-millis ()
   "Return the current time in milliseconds since Jan 1, 1970 00:00:00 UTC."
   (truncate (* 1000 (time-to-seconds (current-time)))))
