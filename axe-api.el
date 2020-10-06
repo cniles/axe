@@ -93,7 +93,7 @@ replace \s+ with ' ' (single space)."
   (string-trim (downcase header-name)))
 
 (defun axe-api--header-values-from-header-name (header-name headers)
-  "Return a list of all the values from HEADERS that correspond to HEADER-NAME.
+  "Return a list of all headers matching HEADER-NAME in HEADERS.
 
 Header names must have been normalized before hand.  Header names
 are compared using equal."

@@ -72,7 +72,7 @@ value."
   (mapcar (lambda (child) (cons (car child) (car (last child)))) (nthcdr 2 node)))
 
 (defun axe-util--search-xml-children (sym children)
-  "Search an XML parse tree CHILDREN for all nodes from tag name SYM."
+  "Search for tags named SYM in XML parse tree CHILDREN."
   (if (null children) ()
     (apply #'append
 	   (mapcar
@@ -89,13 +89,15 @@ value."
   (libxml-parse-xml-region (point) (point-max)))
 
 (defun axe-util--transformed-invoker (fn transform-fn)
-  "Create a lambda that transforms its argument with TRANSFORM-FN and invokes FN with the result."
+  "Create a lambda that will call FN after tranforming args with TRANSFORM-FN."
   (lambda (body get-header) (funcall fn (funcall transform-fn body) get-header)))
 
 (defun axe-util--thing-or-property-at-point (prop key)
-  "Get the value for KEY of text property PROP or symbol at point."
+  "Return text property or thing at point.
+First, check for PROP in the text properties at point.  If found,
+return KEY from that property.  If not, return `thing-at-point'."
   (let ((thing (get-text-property (point) prop)))
-    (if (null thing) (thing-at-point 'symbol) (alist-get key thing))))
+    (if (consp thing) (alist-get key thing) (thing-at-point 'symbol))))
 
 (defun axe-util--log (s)
   "Write string S to the axe log buffer."
