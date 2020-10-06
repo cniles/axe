@@ -158,18 +158,13 @@ sLog Stream Name: ")
    :auto-follow auto-follow
    :auto-follow-delay auto-follow-delay))
 
-(defun axe-logs--log-group-name-at-point ()
-  "Get the log group name at point."
-  (let ((log-group (get-text-property (point) 'log-group)))
-    (if (null log-group) (thing-at-point 'symbol) (alist-get 'logGroupName log-group))))
-
 ;;;###autoload
 (defun axe-logs-latest-log-stream-at-point ()
   "Open the log stream defined at the current  point.
 First checks for text property log-group otherwise uses the text
 at point in the buffer."
   (interactive)
-  (let ((log-group-name (axe-logs--log-group-name-at-point)))
+  (let ((log-group-name (axe-util--thing-or-property-at-point 'log-group 'logGroupName)))
     (axe-logs--describe-log-streams
      (cl-function
       (lambda (&key data &allow-other-keys)
