@@ -52,3 +52,11 @@ with API responses.
    in an API response, the next response will be requested and
    displayed after a configured delay.
 2. `s`: Stop auto-following.
+
+# Roadmap
+
+- aws-buffer-mdoe would probably be better as a derivative of tabulated-list-mode
+- Documentation needs work
+- Read an S3 object to buffer and be able to write it back
+- Write a buffer's contents to an S3 object
+- IAM -- view roles, policies, users, etc.
