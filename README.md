@@ -55,7 +55,9 @@ with API responses.
 
 # Roadmap
 
-- aws-buffer-mdoe would probably be better as a derivative of tabulated-list-mode
+- STS API https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html
+- Make requests with assumed role
+- aws-buffer-mode would probably be better as a derivative of tabulated-list-mode
 - Documentation needs work
 - Read an S3 object to buffer and be able to write it back
 - Write a buffer's contents to an S3 object
