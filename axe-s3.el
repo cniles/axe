@@ -121,26 +121,27 @@ Callback SUCCESS is invoked with the response.  See:
    :path-segments `(,key)
    :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
 
-(cl-defun axe-s3--insert-bucket (bucket &key &allow-other-keys)
-  "Insert the details of BUCKET into the current buffer."
-  (let ((inhibit-read-only t))
-    (insert (propertize (format "%-30s" (alist-get 'CreationDate bucket)) 'bucket bucket 'font-lock-face 'shadow))
-    (insert (propertize (format "%s" (alist-get 'Name bucket)) 'bucket bucket 'font-lock-face 'underline))
-    (newline)))
-
 ;;;###autoload
 (defun axe-s3-list-buckets ()
   "Lists buckets for the account into a buffer."
   (interactive)
-  (axe-buffer-list
+  (axe-list-api-results
    #'axe-s3--list-buckets
    "*axe-s3-bucket-list*"
-   (cl-function (lambda (&key data &allow-other-keys) (mapcar #'axe-util--xml-node-to-alist (axe-util--search-xml-children 'Bucket data))))
+   (cl-function
+    (lambda (&key data &allow-other-keys)
+      (mapcar
+       (lambda (node)
+	 (let ((bucket (axe-util--xml-node-to-alist node)))
+	   (list nil (vector
+		      (format "%-30s" (alist-get 'CreationDate bucket))
+		      (list (format "%s" (alist-get 'Name bucket)) 'bucket bucket)))))
+       (axe-util--search-xml-children 'Bucket data))))
+   [("Creation Date" 30 t) ("Bucket Name" 1 t)]
    ()
    (lambda (map)
      (define-key map (kbd "l") #'axe-s3-list-objects-in-bucket-at-point)
      map)
-   #'axe-s3--insert-bucket
    ()))
 
 ;;;###autoload
