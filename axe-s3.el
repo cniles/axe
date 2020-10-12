@@ -128,15 +128,6 @@ Callback SUCCESS is invoked with the response.  See:
     (insert (propertize (format "%s" (alist-get 'Name bucket)) 'bucket bucket 'font-lock-face 'underline))
     (newline)))
 
-(cl-defun axe-s3--insert-content (content &key &allow-other-keys)
-  "Insert the details of bucket content CONTENT into the current buffer."
-  (let ((inhibit-read-only t))
-    (insert (propertize (format "%-8s" (file-size-human-readable (string-to-number (alist-get 'Size content))))
-			'font-lock-face 'shadow 'content content))
-    (insert (propertize (format "%s" (alist-get 'Key content))
-			'font-lock-face 'underline 'content content))
-    (newline)))
-
 ;;;###autoload
 (defun axe-s3-list-buckets ()
   "Lists buckets for the account into a buffer."
@@ -163,15 +154,21 @@ Callback SUCCESS is invoked with the response.  See:
 (defun axe-s3-list-objects-v2 (bucket)
   "List objects in BUCKET into a buffer."
   (interactive "sBucket: ")
-  (axe-buffer-list
+  (axe-list-api-results
    #'axe-s3--list-objects-v2
    (format "*axe-s3-object-list:%s*" bucket)
    (cl-function
     (lambda (&key data &allow-other-keys)
-      (mapcar #'axe-util--xml-node-to-alist (axe-util--search-xml-children 'Contents data))))
-   (list bucket)
+      (mapcar
+       (lambda (node)
+	 (let ((content (axe-util--xml-node-to-alist node)))
+	   (list nil (vector
+		      (format "%-8s" (file-size-human-readable (string-to-number (alist-get 'Size content))))
+		      (format "%s" (alist-get 'Key content))))))
+       (axe-util--search-xml-children 'Contents data))))
+   [("Size" 8 t) ("Key" 1 t)]
+   `(,bucket)
    ()
-   #'axe-s3--insert-content
    (cl-function
     (lambda (&key data &allow-other-keys)
       (let ((next-token (alist-get 'NextContinuationToken (axe-util--xml-node-to-alist data))))
