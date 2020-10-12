@@ -45,6 +45,17 @@
 (define-derived-mode axe-buffer-mode special-mode "AWS Interactive Buffer"
   "AWS Interactive Buffer")
 
+(defvar axe-api-response-list-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "n") 'axe-buffer--follow-next)
+    (define-key map (kbd "N") 'axe-buffer--auto-follow)
+    (define-key map (kbd "s") 'axe-buffer--stop-auto-follow)
+    map)
+  "AWS API Response List Buffer key map.")
+
+(define-derived-mode axe-api-response-list-mode tabulated-list-mode "AWS Interactive Buffer"
+  "AWS Interactive Buffer")
+
 (defvar-local axe-buffer-next-fn nil
   "Function to invoke to get the next AWS API response for this buffer.
 Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
@@ -159,6 +170,49 @@ AUTO-FOLLOW and AUTO-FOLLOW-DELAY key parameters"
 	     (mapc (lambda (row)
 		     (funcall insert-fn row :window window :response response))
 		   (funcall list-fn :data data :response response)))
+	   (if axe-buffer-auto-follow
+	       (progn
+		 (setq axe-buffer-next-fn nil)
+		 (setq axe-buffer-next-timer
+		       (run-at-time (format "%s sec" axe-buffer-auto-follow-delay) nil next-fn)))
+	     (progn
+	       (setq axe-buffer-next-fn next-fn))))))
+      api-fn
+      api-fn-args
+      next-token-fn)
+     api-fn-args)))
+
+(cl-defun axe-list-api-results (api-fn buffer-name list-fn list-format api-fn-args keybindings-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
+  "TODO"
+  (let ((inhibit-read-only t)
+	(output-buffer (get-buffer-create buffer-name)))
+    (with-current-buffer output-buffer
+      (axe-api-response-list-mode)
+      (setq axe-buffer-next-fn nil)
+      (setq axe-buffer-next-timer nil)
+      (setq axe-buffer-auto-follow auto-follow)
+      (setq axe-buffer-auto-follow-delay auto-follow-delay)
+      (if (functionp keybindings-fn)
+	  (let ((map (make-sparse-keymap)))
+	    (set-keymap-parent map axe-api-response-list-mode-map)
+	    (use-local-map (funcall keybindings-fn map))))
+      (setq tabulated-list-format list-format)
+      (setq tabulated-list-entries nil)
+      (tabulated-list-init-header))
+    (apply
+     api-fn
+     (axe-buffer--make-next-handler
+      (cl-function
+       (lambda (&key response data next-fn &allow-other-keys)
+	 (with-current-buffer output-buffer
+	   (setq axe-buffer-next-timer nil)
+	   ;; This should follow Zen of Buffer Display.
+	   (or (get-buffer-window output-buffer 'visible) (display-buffer output-buffer))
+	   (let ((new-items (funcall list-fn :data data :response response)))
+	     (if (null tabulated-list-entries)
+		 (setq tabulated-list-entries new-items)
+	       (nconc tabulated-list-entries (funcall list-fn :data data :response response))))
+	   (tabulated-list-print)
 	   (if axe-buffer-auto-follow
 	       (progn
 		 (setq axe-buffer-next-fn nil)
