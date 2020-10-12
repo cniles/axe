@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/cniles/axe.svg?branch=master)](https://travis-ci.org/cniles/axe)
+[![Build Status](https://travis-ci.org/cniles/axe.svg?branch=master)](https://travis-ci.org/cniles/axe) [![MELPA](https://melpa.org/packages/axe-badge.svg)](https://melpa.org/#/axe)
 
 # axe
 
