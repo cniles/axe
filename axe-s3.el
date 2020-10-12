@@ -164,7 +164,7 @@ Callback SUCCESS is invoked with the response.  See:
 	 (let ((content (axe-util--xml-node-to-alist node)))
 	   (list nil (vector
 		      (format "%-8s" (file-size-human-readable (string-to-number (alist-get 'Size content))))
-		      (format "%s" (alist-get 'Key content))))))
+		      (list (format "%s" (alist-get 'Key content)) 'content content)))))
        (axe-util--search-xml-children 'Contents data))))
    [("Size" 8 t) ("Key" 1 t)]
    `(,bucket)
