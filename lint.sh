@@ -10,7 +10,7 @@ cask emacs -Q --batch \
      --eval "$INIT_PACKAGE_EL" \
      --eval '(setq package-lint-main-file "axe.el")' \
      -f package-lint-batch-and-exit \
-     axe-*.el
+     axe*.el
 
 CHECKDOC_FN="(defun checkdoc-batch () \
 (mapcar #'checkdoc-file command-line-args-left))"
