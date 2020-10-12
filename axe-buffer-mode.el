@@ -70,7 +70,7 @@ Will be nil if AXE-BUFFER-AUTO-FOLLOW is enabled.")
   "Variable setting the delay (in seconds) between AWS API requests when auto-following.")
 
 (defun axe-buffer--follow-next ()
-  "Call axe-buffer-next-fn for current buffer."
+  "Call `axe-buffer-next-fn' for current buffer."
   (interactive)
   (if (not (functionp axe-buffer-next-fn))
       (message "Cannot follow without next function")
