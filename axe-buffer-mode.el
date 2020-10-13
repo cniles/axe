@@ -200,6 +200,7 @@ be used to control the auto-follow behaviour."
 	(output-buffer (get-buffer-create buffer-name)))
     (with-current-buffer output-buffer
       (axe-api-response-list-mode)
+      (hl-line-mode)
       (setq axe-buffer-next-fn nil)
       (setq axe-buffer-next-timer nil)
       (setq axe-buffer-auto-follow auto-follow)
