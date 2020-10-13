@@ -160,11 +160,11 @@ sLog Stream Name: ")
 
 ;;;###autoload
 (defun axe-logs-latest-log-stream-at-point ()
-  "Open the log stream defined at the current  point.
+  "Open the log stream defined at the current point.
 First checks for text property log-group otherwise uses the text
 at point in the buffer."
   (interactive)
-  (let ((log-group-name (axe-util--thing-or-property-at-point 'log-group 'logGroupName)))
+  (let ((log-group-name (axe-util--thing-or-property-near-point 'log-group 'logGroupName)))
     (axe-logs--describe-log-streams
      (cl-function
       (lambda (&key data &allow-other-keys)

@@ -148,7 +148,7 @@ Callback SUCCESS is invoked with the response.  See:
 (defun axe-s3-list-objects-in-bucket-at-point ()
     "List contents of bucket described at from text property or text."
     (interactive)
-    (let ((bucket (axe-util--thing-or-property-at-point 'bucket 'Name)))
+    (let ((bucket (axe-util--thing-or-property-near-point 'bucket 'Name)))
       (axe-s3-list-objects-v2 bucket)))
 
 ;;;###autoload

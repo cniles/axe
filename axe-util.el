@@ -92,11 +92,21 @@ value."
   "Create a lambda that will call FN after tranforming args with TRANSFORM-FN."
   (lambda (body get-header) (funcall fn (funcall transform-fn body) get-header)))
 
-(defun axe-util--thing-or-property-at-point (prop key)
-  "Return text property or thing at point.
-First, check for PROP in the text properties at point.  If found,
-return KEY from that property.  If not, return `thing-at-point'."
-  (let ((thing (get-text-property (point) prop)))
+(defun axe-util--search-line-for-property (prop)
+  "Search for text property PROP on the at point."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (while (and (< (point) (line-end-position)) (not (get-text-property (point) prop)))
+      (right-char))
+    (get-text-property (point) prop)))
+
+(defun axe-util--thing-or-property-near-point (prop key)
+  "Return the text property on current line  or thing at point.
+First, check for PROP in the text properties on line at point.
+If found, return KEY from that property.  If not, return
+`thing-at-point'."
+  (let ((thing (axe-util--search-line-for-property prop)))
     (if (consp thing) (alist-get key thing) (thing-at-point 'symbol))))
 
 (defun axe-util--log (s)
