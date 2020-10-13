@@ -94,25 +94,6 @@ AWS API params."
 			   (cons "startFromHead" start-from-head)
 			   (cons "startTime" start-time)))))
 
-;;; Insert functions
-
-(cl-defun axe-logs--insert-log-group (log-group &key &allow-other-keys)
-  "Insert formatted text for LOG-GROUP into current buffer."
-  (let ((inhibit-read-only t)
-	(log-group-name (alist-get 'logGroupName log-group))
-	(size (file-size-human-readable (alist-get 'storedBytes log-group)))
-	(creation-time (format-time-string "%F %T" (seconds-to-time (/ (alist-get 'creationTime log-group) 1000)))))
-    (insert (propertize (format "%s %8s %s\n" creation-time size log-group-name) 'log-group log-group))))
-
-(cl-defun axe-logs--insert-log-event (log-event &key &allow-other-keys)
-  "Insert formatted text for LOG-EVENT into current buffer."
-  (let ((inhibit-read-only t)
-	(message (alist-get 'message log-event))
-	(timestamp (format-time-string "%F %T" (seconds-to-time (/ (alist-get 'timestamp log-event) 1000)))))
-    (insert (propertize (format "%s %s\n" timestamp message) 'log-event log-event))))
-
-;;; List buffers
-
 ;;;###autoload
 (defun axe-logs-describe-log-groups (prefix)
   "Opens a new buffer and displays all log groups.
@@ -123,16 +104,24 @@ displayed."
   (interactive "sPrefix: ")
   (let ((prefix (if (equal "" prefix) nil prefix))
 	(limit ()))
-    (axe-buffer-list
+    (axe-list-api-results
      #'axe-logs--describe-log-groups
      "*axe-log-groups*"
-     (cl-function (lambda (&key data &allow-other-keys)
-		    (alist-get 'logGroups data)))
+     (cl-function
+      (lambda (&key data &allow-other-keys)
+	(mapcar
+	 (lambda (log-group)
+	   (list nil
+		 (vector
+		  (format-time-string "%F %T" (seconds-to-time (/ (alist-get 'creationTime log-group) 1000)))
+		  (file-size-human-readable (alist-get 'storedBytes log-group))
+		  (list (format "%s" (alist-get 'logGroupName log-group)) 'log-group log-group))))
+	 (alist-get 'logGroups data))))
+     [("Creation Time" 20 t) ("Size" 8 t) ("Log Group Name" 1 t)]
      (list :prefix prefix :limit limit)
      (lambda (map)
-       (define-key map (kbd "l") #'axe-logs-latest-log-stream-at-point)
+       (define-key map (kbd "l") #'axe-logs-latest-log-stream-near-point)
        map)
-     #'axe-logs--insert-log-group
      (cl-function (lambda (&key data &allow-other-keys)
 		    (alist-get 'nextToken data)))
      :auto-follow t
@@ -146,23 +135,33 @@ mode.  In follow mode the next API request will automatically be
 executed after FOLLOW-DELAY seconds (default 5 seconds)."
   (interactive "sLog Group Name:
 sLog Stream Name: ")
-  (axe-buffer-list
+  (axe-list-api-results
    #'axe-logs--get-log-events
    (format "*axe-log-stream:%s*" log-stream-name)
-   (cl-function (lambda (&key data &allow-other-keys) (alist-get 'events data)))
+   (cl-function
+    (lambda (&key data &allow-other-keys)
+      (mapcar
+       (lambda (log-event)
+	 (axe-util--log log-event)
+	 (list nil
+	       (vector
+		(format-time-string "%F %T" (seconds-to-time (/ (alist-get 'timestamp log-event) 1000)))
+		(list (format "%s" (s-trim (alist-get 'eventId log-event))) 'log-event log-event)
+		(format "%s" (substring (json-encode-string (alist-get 'message log-event)) 1 -1)))))
+       (alist-get 'events data))))
+   [("Timestamp" 20 t) ("Event ID" 10 t) ("Message" 1 t)]
    (list log-group-name log-stream-name)
    ()
-   #'axe-logs--insert-log-event
    (cl-function (lambda (&key data &allow-other-keys)
      (alist-get 'nextForwardToken data)))
    :auto-follow auto-follow
    :auto-follow-delay auto-follow-delay))
 
 ;;;###autoload
-(defun axe-logs-latest-log-stream-at-point ()
-  "Open the log stream defined at the current point.
-First checks for text property log-group otherwise uses the text
-at point in the buffer."
+(defun axe-logs-latest-log-stream-near-point ()
+  "Open the log stream defined near the current point.
+First checks for text property log-group on the line at point
+otherwise uses the text at point in the buffer."
   (interactive)
   (let ((log-group-name (axe-util--thing-or-property-near-point 'log-group 'logGroupName)))
     (axe-logs--describe-log-streams
