@@ -183,7 +183,19 @@ AUTO-FOLLOW and AUTO-FOLLOW-DELAY key parameters"
      api-fn-args)))
 
 (cl-defun axe-list-api-results (api-fn buffer-name list-fn list-format api-fn-args keybindings-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
-  "TODO"
+  "Make an AWS API request and display the results in a buffer.
+API-FN specifies which AWS API function should be invoked, the
+results of which are placed into a buffer named BUFFER-NAME,
+creating it if necesary.  The function specified by LIST-FN is
+used to transform each API response into a format suitable for
+display by `tabulated-list-mode', which should conform to the
+format specified in LIST-FORMAT.  Each invocation of API-FN is
+made with arguments specified in API-FN-ARGS.  The mode's
+keybindings can be updated by specifying KEYBINDINGS-FN (set it
+to nil if not needed).  NEXT-TOKEN-FN is invoked on each API
+response to extract the API next token.  If NEXT-TOKEN-FN is nil
+this behaviour is ignored.  AUTO-FOLLOW and AUTO-FOLLOW-DELAY can
+be used to control the auto-follow behaviour."
   (let ((inhibit-read-only t)
 	(output-buffer (get-buffer-create buffer-name)))
     (with-current-buffer output-buffer
