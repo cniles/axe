@@ -68,13 +68,6 @@ See `https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html'."
 				    ("X-Amz-Client-Context" . ,client-context)))
    :request-payload payload))
 
-(cl-defun axe-lambda--insert-function (fun &key &allow-other-keys)
-  "Insert the details of lambda function FUN into the current buffer."
-  (let ((inhibit-read-only t))
-    (insert (propertize (format "%-15s" (file-size-human-readable (alist-get 'CodeSize fun))) 'function fun 'font-lock-face 'shadow))
-    (insert (propertize (format "%s" (alist-get 'FunctionName fun)) 'function fun 'font-lock-face 'underline))
-    (newline)))
-
 (cl-defun axe-lambda--insert-invoke-response (data &key window response &allow-other-keys)
   "Insert response DATA from invoking a Lambda function into WINDOW.
 Displays logs from RESPONSE in an auxiliary buffer, contained in
@@ -95,19 +88,26 @@ correspond to AWS API request parameters.
 
 See `https://docs.aws.amazon.com/lambda/latest/dg/API_ListFunctions.html'."
   (interactive)
-  (axe-buffer-list
+  (axe-list-api-results
    #'axe-lambda--list-functions
    "*axe-lambda-functions*"
-   (cl-function (lambda (&key data &allow-other-keys) (alist-get 'Functions data)))
+   (cl-function
+    (lambda (&key data &allow-other-keys)
+      (mapcar
+       (lambda (fun)
+	 (list nil
+	       (vector
+		(format "%s" (file-size-human-readable (alist-get 'CodeSize fun)))
+		(list (format "%s" (alist-get 'FunctionName fun)) 'function fun))))
+       (alist-get 'Functions data))))
+   [("Code Size" 10 t) ("Function Name" 1 t)]
    (list :function-version function-version :master-region master-region :max-items max-items)
    ()
-   #'axe-lambda--insert-function
    (cl-function (lambda (&key data &allow-other-keys) (alist-get 'NextMarker data)))))
 
 ;;;###autoload
 (cl-defun axe-lambda-invoke-with-buffer (function-name buffer-or-name)
   "Invoke AWS Lambda function with name FUNCTION-NAME.
-
 The contents of BUFFER-OR-NAME are used as the payload."
   (interactive
    (list

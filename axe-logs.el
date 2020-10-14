@@ -142,7 +142,6 @@ sLog Stream Name: ")
     (lambda (&key data &allow-other-keys)
       (mapcar
        (lambda (log-event)
-	 (axe-util--log log-event)
 	 (list nil
 	       (vector
 		(format-time-string "%F %T" (seconds-to-time (/ (alist-get 'timestamp log-event) 1000)))
