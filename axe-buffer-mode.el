@@ -34,17 +34,6 @@
 
 (require 'axe-util)
 
-(defvar axe-buffer-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "n") 'axe-buffer--follow-next)
-    (define-key map (kbd "N") 'axe-buffer--auto-follow)
-    (define-key map (kbd "s") 'axe-buffer--stop-auto-follow)
-    map)
-  "AWS Interactive Buffer key map.")
-
-(define-derived-mode axe-buffer-mode special-mode "AWS Interactive Buffer"
-  "AWS Interactive Buffer")
-
 (defvar axe-api-response-list-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "n") 'axe-buffer--follow-next)
@@ -123,64 +112,6 @@ in PARAMS."
 		       (apply api-fn
 			      (axe-buffer--make-next-handler success api-fn params next-token-fn)
 			      (append params (list :next-token next-token))))))))))
-
-(cl-defun axe-buffer-list (api-fn buffer-name list-fn api-fn-args keybindings-fn insert-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
-  "Displays items returned by consecutive responses from API-FN.
-
-Contents are displayed in the buffer BUFFER-NAME.  The contents
-of the buffer will be erased and its minor mode changed.  Each
-response should be unmarshallable into a list that is returned by
-LIST-FN.  Each LIST-FN result is mapped with INSERT-FN.
-INSERT-FN is expected to perform some insert option into the
-current buffer (the output buffer created by the function).
-Custom key bindings can be added to the output buffer using a
-provided KEYBINDINGS-FN that takes a single key map as its
-parameter.  Each call to API-FN is made using a next token (if
-available) and all arguments in the API-FN-ARGS list.
-
-Consecutive calls to API-FN require some form of a 'next token'
-from the API.  NEXT-TOKEN-FN is called with the API response in
-`make-function-handler` to retrieve the value.
-
-Tail-calling of the next API response can be controlled with the
-AUTO-FOLLOW and AUTO-FOLLOW-DELAY key parameters"
-  (let ((inhibit-read-only t)
-	(output-buffer (get-buffer-create buffer-name)))
-    (with-current-buffer output-buffer
-      (axe-buffer-mode)
-      (setq axe-buffer-next-fn nil)
-      (setq axe-buffer-next-timer nil)
-      (setq axe-buffer-auto-follow auto-follow)
-      (setq axe-buffer-auto-follow-delay auto-follow-delay)
-      (if (functionp keybindings-fn)
-	  (let ((map (make-sparse-keymap)))
-	    (set-keymap-parent map axe-buffer-mode-map)
-	    (use-local-map (funcall keybindings-fn map))))
-      (erase-buffer)
-      (setq buffer-read-only t))
-    (apply
-     api-fn
-     (axe-buffer--make-next-handler
-      (cl-function
-       (lambda (&key response data next-fn &allow-other-keys)
-	 (with-current-buffer output-buffer
-	   (setq axe-buffer-next-timer nil)
-	   (goto-char (point-max))
-	   (let ((window (or (get-buffer-window output-buffer 'visible) (display-buffer output-buffer))))
-	     (mapc (lambda (row)
-		     (funcall insert-fn row :window window :response response))
-		   (funcall list-fn :data data :response response)))
-	   (if axe-buffer-auto-follow
-	       (progn
-		 (setq axe-buffer-next-fn nil)
-		 (setq axe-buffer-next-timer
-		       (run-at-time (format "%s sec" axe-buffer-auto-follow-delay) nil next-fn)))
-	     (progn
-	       (setq axe-buffer-next-fn next-fn))))))
-      api-fn
-      api-fn-args
-      next-token-fn)
-     api-fn-args)))
 
 (cl-defun axe-list-api-results (api-fn buffer-name list-fn list-format api-fn-args keybindings-fn next-token-fn &key auto-follow (auto-follow-delay 5.0))
   "Make an AWS API request and display the results in a buffer.
