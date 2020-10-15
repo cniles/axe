@@ -31,6 +31,29 @@
 (require 'axe-api)
 (require 'axe-buffer-mode)
 
+(defvar-local axe-lambda-log-buffer nil
+  "The log buffer associated with an AWS Lambda result window.")
+
+(defun axe-lambda--delete-result-window ()
+    "Close a lambda result window and its log window."
+    (interactive)
+    (delete-window (get-buffer-window axe-lambda-log-buffer))
+    (delete-window))
+
+(defvar axe-lambda-result-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "q") #'axe-lambda--delete-result-window)
+    map))
+
+(setq axe-lambda-result-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "q") #'axe-lambda--delete-result-window)
+    map))
+
+(define-derived-mode axe-lambda-result-mode
+  special-mode "Lambda Result"
+  "Major mode for showing AWS Lambda result.")
+
 (cl-defun axe-lambda--list-functions (success &key function-version next-token master-region max-items)
   "List functions in the account and call SUCCESS when complete.
 
@@ -111,14 +134,12 @@ The contents of BUFFER-OR-NAME are used as the payload."
 	      (log-buffer (get-buffer-create (format "%s%s*" (buffer-name) "logs*"))))
 	  (with-current-buffer-window
 	      output-buffer '((display-buffer-reuse-window) (window-height . fit-frame-to-buffer)) nil
-	    (setq-local log-buffer log-buffer)
-	    (erase-buffer)
 	    (insert data)
-	    (special-mode))
+	    (axe-lambda-result-mode)
+	    (setq axe-lambda-log-buffer log-buffer))
 	  (with-selected-window (get-buffer-window output-buffer)
 	    (with-current-buffer-window
 		log-buffer '((display-buffer-below-selected) (window-height . 20)) nil
-	      (erase-buffer)
 	      (insert (base64-decode-string (request-response-header response "X-Amz-Log-Result")))
 	      (special-mode))))))
      function-name
