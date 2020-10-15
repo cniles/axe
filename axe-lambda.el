@@ -68,17 +68,6 @@ See `https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html'."
 				    ("X-Amz-Client-Context" . ,client-context)))
    :request-payload payload))
 
-(cl-defun axe-lambda--insert-invoke-response (data &key window response &allow-other-keys)
-  "Insert response DATA from invoking a Lambda function into WINDOW.
-Displays logs from RESPONSE in an auxiliary buffer, contained in
-X-Amz-Log-Result."
-  (with-selected-window window
-    (with-current-buffer (get-buffer-create (format "%s%s*" (buffer-name) "logs*"))
-      (display-buffer-below-selected (current-buffer) '((window-height . 20)))
-      (insert (base64-decode-string (request-response-header response "X-Amz-Log-Result")))))
-  (let ((inhibit-read-only t))
-    (insert data)))
-
 ;;;###autoload
 (cl-defun axe-lambda-list-functions (&key function-version master-region max-items)
   "List functions in the account.
