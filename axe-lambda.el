@@ -113,16 +113,28 @@ The contents of BUFFER-OR-NAME are used as the payload."
    (list
     (read-from-minibuffer "Function Name: ")
     (read-from-minibuffer "Buffer: " (buffer-name))))
-  (let ((input-buffer (get-buffer buffer-or-name)))
-    (axe-buffer-list
-     #'axe-lambda--invoke
-     (format "*%s:%s-response*" (buffer-name input-buffer) function-name)
-     (cl-function (lambda (&key data _response &allow-other-keys) (list data)))
-     (let ((payload (with-current-buffer input-buffer (buffer-string))))
-       (list function-name payload :log-type "Tail"))
-     ()
-     #'axe-lambda--insert-invoke-response
-     ())))
+  (let* ((input-buffer (get-buffer buffer-or-name))
+	 (payload (with-current-buffer input-buffer (buffer-string))))
+    (axe-lambda--invoke
+     (cl-function
+      (lambda (&key data response &allow-other-keys)
+	(let ((output-buffer (get-buffer-create (format "*%s:%s-response*" (buffer-name input-buffer) function-name)))
+	      (log-buffer (get-buffer-create (format "%s%s*" (buffer-name) "logs*"))))
+	  (with-current-buffer-window
+	      output-buffer '((display-buffer-reuse-window) (window-height . fit-frame-to-buffer)) nil
+	    (setq-local log-buffer log-buffer)
+	    (erase-buffer)
+	    (insert data)
+	    (special-mode))
+	  (with-selected-window (get-buffer-window output-buffer)
+	    (with-current-buffer-window
+		log-buffer '((display-buffer-below-selected) (window-height . 20)) nil
+	      (erase-buffer)
+	      (insert (base64-decode-string (request-response-header response "X-Amz-Log-Result")))
+	      (special-mode))))))
+     function-name
+     payload
+     :log-type "Tail")))
 
 (provide 'axe-lambda)
 ;;; axe-lambda.el ends here
