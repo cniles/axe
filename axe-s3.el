@@ -108,7 +108,7 @@ CreateBucket documentation.  See:
    :parser #'axe-util--xml-read
    :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
 
-(cl-defun axe-s3--get-object (success bucket key)
+(cl-defun axe-s3--get-object (success bucket &rest path-segments)
   "Download the contents of object specified by KEY from BUCKET.
 Callback SUCCESS is invoked with the response.  See:
 `https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html'"
@@ -118,7 +118,7 @@ Callback SUCCESS is invoked with the response.  See:
    success
    "GET"
    :parser #'buffer-string
-   :path-segments `(,key)
+   :path-segments path-segments
    :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
 
 ;;;###autoload
