@@ -45,6 +45,10 @@
 ;; encoding. For more information, consult the documentation for that
 ;; service.
 
+;; Check the backend used by request and warn if its not using `curl'.
+(if (not (eq 'curl request-backend))
+    (display-warning :error "axe requires curl be available."))
+
 (defun axe-api--sigv4-hash (data)
   "Hash and return hex-encoded result of string DATA."
   (secure-hash 'sha256 data))
