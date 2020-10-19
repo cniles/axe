@@ -225,7 +225,6 @@ Callback SUCCESS is invoked with the response.  See:
       (list type subtype 'binary))))
 
 (defvar axe-mime-image-subtype-to-image-symbol
-  "An alist mapping mime image subtypes to Emacs image symbol."
   '(("jpg" . jpeg)
     ("jpeg" . jpeg)
     ("png" . 'png)
@@ -237,7 +236,8 @@ Callback SUCCESS is invoked with the response.  See:
     ("x-xbm" . xbm)
     ("x-bitmap" . xbm)
     ("x-xpixmap" . xpm)
-    ("x-portable-bitmap" . pbm)))
+    ("x-portable-bitmap" . pbm))
+  "An alist mapping mime image subtypes to Emacs image symbol.")
 
 (defun axe-s3--download-and-display-object (bucket mime-type &rest path-segments)
   "Download and display an object from BUCKET.
