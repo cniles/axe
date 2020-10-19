@@ -268,8 +268,6 @@ for downloading."
 	   encoding
 	   path-segments)))
 
-(alist-get "jpeg" axe-mime-image-subtype-to-image-symbol nil nil #'string=)
-
 ;;;###autoload
 (defun axe-s3-display-object (bucket &rest path-segments)
   "Download and display an S3 object in BUCKET whose key is made up of PATH-SEGMENTS."
