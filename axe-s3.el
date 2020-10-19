@@ -205,7 +205,7 @@ Callback SUCCESS is invoked with the response.  See:
   "Delete BUCKET."
   (interactive "sBucket: ")
   (axe-s3--delete-bucket
-   (cl-function (lambda (&key data &allow-other-keys) (axe-util--log data) (message "Successfully deleted bucket %s" bucket)))
+   (cl-function (lambda (&key data &allow-other-keys) (message "Successfully deleted bucket %s" bucket)))
    bucket))
 
 
@@ -248,7 +248,6 @@ for downloading."
     (apply #'axe-s3--get-object
 	   (cl-function
 	    (lambda (&key data &allow-other-keys)
-	      (axe-util--log "object downloaded")
 	      (let ((output-buffer
 		     (get-buffer-create
 		      (format "*axe-s3:%s*" (s-join "/" path-segments)))))
@@ -258,17 +257,17 @@ for downloading."
 		    nil
 		  (erase-buffer)
 		  (let ((image-subtype (alist-get subtype axe-mime-image-subtype-to-image-symbol nil nil #'string=)))
-		    (axe-util--log "trying to display")
-		    (axe-util--log image-subtype)
 		    (if (eq 'utf-8 encoding)
 			(insert data)
 		      (if (and (string= type "image")
 			       (image-type-available-p image-subtype))
-			  (insert-image (create-image (string-to-unibyte data) image-subtype t))
+			  (insert-image (create-image (encode-coding-string data 'no-conversion) image-subtype t))
 			(insert "<binary data>"))))))))
 	   bucket
 	   encoding
 	   path-segments)))
+
+(alist-get "jpeg" axe-mime-image-subtype-to-image-symbol nil nil #'string=)
 
 ;;;###autoload
 (defun axe-s3-display-object (bucket &rest path-segments)
