@@ -45,11 +45,6 @@
     (define-key map (kbd "q") #'axe-lambda--delete-result-window)
     map))
 
-(setq axe-lambda-result-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "q") #'axe-lambda--delete-result-window)
-    map))
-
 (define-derived-mode axe-lambda-result-mode
   special-mode "Lambda Result"
   "Major mode for showing AWS Lambda result.")

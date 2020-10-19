@@ -239,20 +239,6 @@ Callback SUCCESS is invoked with the response.  See:
     ("x-xpixmap" . xpm)
     ("x-portable-bitmap" . pbm)))
 
-(setq axe-mime-image-subtype-to-image-symbol '(("jpeg" . jpeg)
-					       ("jpg" . jpeg)
-					       ("jpeg" . jpeg)
-					       ("png" . 'png)
-					       ("tiff" . 'tiff)
-					       ("gif" . gif)
-					       ("xpm" . xpm)
-					       ("xbm" . xbm)
-					       ("x-xpm" . xpm)
-					       ("x-xbm" . xbm)
-					       ("x-bitmap" . xbm)
-					       ("x-xpixmap" . xpm)
-					       ("x-portable-bitmap" . pbm)))
-
 (defun axe-s3--download-and-display-object (bucket mime-type &rest path-segments)
   "Download and display an object from BUCKET.
 The object's key should be made of the items in PATH-SEGMENTS
