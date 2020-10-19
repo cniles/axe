@@ -205,7 +205,7 @@ Callback SUCCESS is invoked with the response.  See:
   "Delete BUCKET."
   (interactive "sBucket: ")
   (axe-s3--delete-bucket
-   (cl-function (lambda (&key data &allow-other-keys) (message "Successfully deleted bucket %s" bucket)))
+   (cl-function (lambda (&key &allow-other-keys) (message "Successfully deleted bucket %s" bucket)))
    bucket))
 
 
