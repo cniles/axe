@@ -33,6 +33,7 @@
 (require 'axe-buffer-mode)
 (require 'xml)
 (require 'xmlgen)
+(require 'dash)
 
 (defun axe-s3--list-buckets (success)
   "Get buckets in the account and call SUCCESS when done."

@@ -8,6 +8,7 @@
 (depends-on "hmac")
 (depends-on "request")
 (depends-on "xmlgen")
+(depends-on "dash")
 (depends-on "s")
 
 (development
