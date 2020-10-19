@@ -51,7 +51,7 @@
 
 (defun axe-api--sigv4-hash (data)
   "Hash and return hex-encoded result of string DATA."
-  (secure-hash 'sha256 data))
+  (secure-hash 'sha256 (or data "")))
 
 (defun axe-api--double-uri-encode (s)
   "Return double URI encoded form of string S."
@@ -280,11 +280,12 @@ secret."
 
 (cl-defun axe-api-request (host service-code success method-type
 				&key
+				encoding
 				(region-code axe-region)
 				(query-params ())
 				(path-segments (list ""))
 				(algorithm "AWS4-HMAC-SHA256")
-				(request-payload "")
+				request-payload
 				(headers ())
 				(parser 'buffer-string))
   "Make a signed AWS API sigv4 request.
@@ -297,7 +298,7 @@ response, the callback SUCCESS will be invoked."
     (let* ((creds (axe-api--get-credentials))
 	 (request-date-time (current-time))
 	 (amz-date-header (cons "X-Amz-Date" (axe-api--time-to-iso8601-string request-date-time)))
-	 (content-length-header (cons "Content-Length" (int-to-string (length request-payload))))
+	 (content-length-header (cons "Content-Length" (int-to-string (if request-payload (length request-payload) 0))))
 	 (host-header (cons "Host" host))
 	 (headers (append (list content-length-header host-header amz-date-header) headers ()))
 	 (endpoint (concat "https://" host (s-join "/" (cons "" path-segments))))
@@ -325,6 +326,7 @@ response, the callback SUCCESS will be invoked."
       :parser parser
       :type method-type
       :data request-payload
+      :encoding (or encoding 'utf-8)
       :error (cl-function
 	      (lambda (&rest args &key data error-thrown &allow-other-keys)
 		(axe-util--log "Error thrown:")
