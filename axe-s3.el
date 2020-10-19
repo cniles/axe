@@ -108,7 +108,7 @@ CreateBucket documentation.  See:
    :parser #'axe-util--xml-read
    :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
 
-(cl-defun axe-s3--get-object (success bucket &rest path-segments)
+(cl-defun axe-s3--get-object (success bucket encoding &rest path-segments)
   "Download the contents of object specified by KEY from BUCKET.
 Callback SUCCESS is invoked with the response.  See:
 `https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html'"
@@ -117,7 +117,19 @@ Callback SUCCESS is invoked with the response.  See:
    's3
    success
    "GET"
-   :parser #'buffer-string
+   :encoding encoding
+   :path-segments path-segments
+   :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
+
+(cl-defun axe-s3--head-object (success bucket &rest path-segments)
+  "Download the contents of object specified by KEY from BUCKET.
+Callback SUCCESS is invoked with the response.  See:
+`https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html'"
+  (axe-api-request
+   (format "%s.s3.amazonaws.com" bucket)
+   's3
+   success
+   "GET"
    :path-segments path-segments
    :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
 
@@ -146,10 +158,10 @@ Callback SUCCESS is invoked with the response.  See:
 
 ;;;###autoload
 (defun axe-s3-list-objects-in-bucket-at-point ()
-    "List contents of bucket described at from text property or text."
-    (interactive)
-    (let ((bucket (axe-util--thing-or-property-near-point 'bucket 'Name)))
-      (axe-s3-list-objects-v2 bucket)))
+  "List contents of bucket described at from text property or text."
+  (interactive)
+  (let ((bucket (axe-util--thing-or-property-near-point 'bucket 'Name)))
+    (axe-s3-list-objects-v2 bucket)))
 
 ;;;###autoload
 (defun axe-s3-list-objects-v2 (bucket)
@@ -169,7 +181,12 @@ Callback SUCCESS is invoked with the response.  See:
        (axe-util--search-xml-children 'Contents data))))
    [("Size" 8 t) ("Key" 1 t)]
    `(,bucket)
-   ()
+   (lambda (map)
+     (define-key map (kbd "d")
+       (lambda ()
+	 (interactive)
+	 (axe-s3-display-object bucket (axe-util--thing-or-property-near-point 'content 'Key))))
+     map)
    (cl-function
     (lambda (&key data &allow-other-keys)
       (let ((next-token (alist-get 'NextContinuationToken (axe-util--xml-node-to-alist data))))
@@ -190,6 +207,101 @@ Callback SUCCESS is invoked with the response.  See:
   (axe-s3--delete-bucket
    (cl-function (lambda (&key data &allow-other-keys) (axe-util--log data) (message "Successfully deleted bucket %s" bucket)))
    bucket))
+
+
+;; Download & show an S3 object in a new buffer.
+
+(defvar axe-text-mime-application-subtypes
+  '("json" "yaml" "xml" "sql" "javascript" "ecmascript" "x-javascript" "x-ecmascript")
+  "List of mime application subtypes that are utf-8 encoded.")
+
+(defun axe-mime-type-info (mime-header-value)
+  "Determine an appropriate encoding that can be expected from MIME-HEADER-VALUE."
+  (pcase-let ((`(,type ,subtype) (s-split "/" (downcase mime-header-value))))
+    (if (or (string= "text" type)
+	    (and (string= "application" type)
+		 (-contains? axe-text-mime-application-subtypes subtype)))
+	(list type subtype 'utf-8)
+      (list type subtype 'binary))))
+
+(defvar axe-mime-image-subtype-to-image-symbol
+  "An alist mapping mime image subtypes to Emacs image symbol."
+  '(("jpg" . jpeg)
+    ("jpeg" . jpeg)
+    ("png" . 'png)
+    ("tiff" . 'tiff)
+    ("gif" . gif)
+    ("xpm" . xpm)
+    ("xbm" . xbm)
+    ("x-xpm" . xpm)
+    ("x-xbm" . xbm)
+    ("x-bitmap" . xbm)
+    ("x-xpixmap" . xpm)
+    ("x-portable-bitmap" . pbm)))
+
+(setq axe-mime-image-subtype-to-image-symbol '(("jpeg" . jpeg)
+					       ("jpg" . jpeg)
+					       ("jpeg" . jpeg)
+					       ("png" . 'png)
+					       ("tiff" . 'tiff)
+					       ("gif" . gif)
+					       ("xpm" . xpm)
+					       ("xbm" . xbm)
+					       ("x-xpm" . xpm)
+					       ("x-xbm" . xbm)
+					       ("x-bitmap" . xbm)
+					       ("x-xpixmap" . xpm)
+					       ("x-portable-bitmap" . pbm)))
+
+(defun axe-s3--download-and-display-object (bucket mime-type &rest path-segments)
+  "Download and display an object from BUCKET.
+The object's key should be made of the items in PATH-SEGMENTS
+split by '/' characters.  MIME-TYPE is used to set the encoding
+for downloading."
+  (pcase-let ((`(,type ,subtype ,encoding) (axe-mime-type-info mime-type)))
+    (apply #'axe-s3--get-object
+	   (cl-function
+	    (lambda (&key data &allow-other-keys)
+	      (axe-util--log "object downloaded")
+	      (let ((output-buffer
+		     (get-buffer-create
+		      (format "*axe-s3:%s*" (s-join "/" path-segments)))))
+		(with-current-buffer-window
+		    output-buffer
+		    '((display-buffer-reuse-window))
+		    nil
+		  (erase-buffer)
+		  (let ((image-subtype (alist-get subtype axe-mime-image-subtype-to-image-symbol nil nil #'string=)))
+		    (axe-util--log "trying to display")
+		    (axe-util--log image-subtype)
+		    (if (eq 'utf-8 encoding)
+			(insert data)
+		      (if (and (string= type "image")
+			       (image-type-available-p image-subtype))
+			  (insert-image (create-image (string-to-unibyte data) image-subtype t))
+			(insert "<binary data>"))))))))
+	   bucket
+	   encoding
+	   path-segments)))
+
+;;;###autoload
+(defun axe-s3-display-object (bucket &rest path-segments)
+  "Download and display an S3 object in BUCKET whose key is made up of PATH-SEGMENTS."
+  (interactive
+   (list
+    (read-from-minibuffer "Bucket: ")
+    (read-from-minibuffer "Key: ")))
+  (if (stringp path-segments)
+      (setq path-segments (s-split "/" path-segments)))
+  (apply #'axe-s3--head-object
+	 (cl-function
+	  (lambda (&key response &allow-other-keys)
+	    (apply #'axe-s3--download-and-display-object
+		   bucket
+		   (request-response-header response "Content-Type")
+		   path-segments)))
+	 bucket
+	 path-segments))
 
 (provide 'axe-s3)
 ;;; axe-s3.el ends here
