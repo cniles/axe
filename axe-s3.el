@@ -34,6 +34,20 @@
 (require 'xml)
 (require 'xmlgen)
 (require 'dash)
+(defvar axe-mime-image-subtype-to-image-symbol
+  '(("jpg" . jpeg)
+    ("jpeg" . jpeg)
+    ("png" . png)
+    ("tiff" . tiff)
+    ("gif" . gif)
+    ("xpm" . xpm)
+    ("xbm" . xbm)
+    ("x-xpm" . xpm)
+    ("x-xbm" . xbm)
+    ("x-bitmap" . xbm)
+    ("x-xpixmap" . xpm)
+    ("x-portable-bitmap" . pbm))
+  "An alist mapping mime image subtypes to Emacs image symbol.")
 
 (defun axe-s3--list-buckets (success)
   "Get buckets in the account and call SUCCESS when done."
@@ -240,21 +254,6 @@ Callback SUCCESS is invoked with the response.  See:
 		 (-contains? axe-text-mime-application-subtypes subtype)))
 	(list type subtype 'utf-8)
       (list type subtype 'binary))))
-
-(defvar axe-mime-image-subtype-to-image-symbol
-  '(("jpg" . jpeg)
-    ("jpeg" . jpeg)
-    ("png" . 'png)
-    ("tiff" . 'tiff)
-    ("gif" . gif)
-    ("xpm" . xpm)
-    ("xbm" . xbm)
-    ("x-xpm" . xpm)
-    ("x-xbm" . xbm)
-    ("x-bitmap" . xbm)
-    ("x-xpixmap" . xpm)
-    ("x-portable-bitmap" . pbm))
-  "An alist mapping mime image subtypes to Emacs image symbol.")
 
 (defun axe-s3--download-and-display-object (bucket mime-type &rest path-segments)
   "Download and display an object from BUCKET.
