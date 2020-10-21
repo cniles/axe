@@ -34,6 +34,7 @@
 (require 'xml)
 (require 'xmlgen)
 (require 'dash)
+(require 'mimetypes)
 
 (defvar-local axe-s3-object-key nil
   "If a buffer originates from an S3 Object, this value specifies
@@ -199,6 +200,33 @@ Callback SUCCESS is invoked with the response.  See:
      (define-key map (kbd "l") #'axe-s3-list-objects-in-bucket-at-point)
      map)
    ()))
+
+(defun axe-s3-guess-mime-type (file-name)
+  "Try to guess the mime type of FILE-NAME."
+  (if-let (extension (if (s-contains-p "." file-name)
+			 (-last-item (s-split "[.]" file-name))
+		       nil))
+      (mimetypes-extension-to-mime extension)))
+
+;;;###autoload
+(defun axe-s3-write-buffer-to-object (bucket key content-type)
+  "Write the contents of the current buffer to a BUCKET under KEY.
+The object's content type is specified with CONTENT-TYPE."
+  (interactive
+   (list
+    (read-from-minibuffer "Bucket: " axe-s3-object-bucket)
+    (read-from-minibuffer "Key: " axe-s3-object-key)
+    (or axe-s3-object-content-type
+	(axe-s3-guess-mime-type (buffer-name))
+	(read-from-minibuffer "Content Type: " "text/plain"))))
+   (axe-s3--put-object
+    (cl-function
+     (lambda (&key response &allow-other-keys)
+       (axe-util--log (request-response-status-code response))))
+    bucket
+    (buffer-string)
+    content-type
+    key))
 
 ;;;###autoload
 (defun axe-s3-list-objects-in-bucket-at-point ()
