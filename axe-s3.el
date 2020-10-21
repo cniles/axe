@@ -34,6 +34,19 @@
 (require 'xml)
 (require 'xmlgen)
 (require 'dash)
+
+(defvar-local axe-s3-object-key nil
+  "If a buffer originates from an S3 Object, this value specifies
+its key.")
+
+(defvar-local axe-s3-object-bucket nil
+  "If a buffer originates from an S3 Object, this value specifies
+its key.")
+
+(defvar-local axe-s3-object-content-type nil
+  "If a buffer originates from an S3 Object, this value specifies
+its key.")
+
 (defvar axe-mime-image-subtype-to-image-symbol
   '(("jpg" . jpeg)
     ("jpeg" . jpeg)
