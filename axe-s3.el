@@ -276,22 +276,25 @@ for downloading."
   (pcase-let ((`(,type ,subtype ,encoding) (axe-mime-type-info mime-type)))
     (apply #'axe-s3--get-object
 	   (cl-function
-	    (lambda (&key data &allow-other-keys)
+	    (lambda (&key response data &allow-other-keys)
 	      (let ((output-buffer
 		     (get-buffer-create
 		      (format "*axe-s3:%s*" (s-join "/" path-segments)))))
 		(with-current-buffer-window
-		    output-buffer
-		    '((display-buffer-reuse-window))
-		    nil
-		  (erase-buffer)
-		  (let ((image-subtype (alist-get subtype axe-mime-image-subtype-to-image-symbol nil nil #'string=)))
-		    (if (eq 'utf-8 encoding)
-			(insert data)
-		      (if (and (string= type "image")
-			       (image-type-available-p image-subtype))
-			  (insert-image (create-image (encode-coding-string data 'no-conversion) image-subtype t))
-			(insert "<binary data>"))))))))
+		 output-buffer
+		 '((display-buffer-reuse-window))
+		 nil
+		 (erase-buffer)
+		 (setq axe-s3-object-bucket bucket)
+		 (setq axe-s3-object-key (s-join "/" path-segments))
+		 (setq axe-s3-object-content-type (request-response-header response "Content-Type"))
+		 (let ((image-subtype (alist-get subtype axe-mime-image-subtype-to-image-symbol nil nil #'string=)))
+		   (if (eq 'utf-8 encoding)
+		       (insert data)
+		     (if (and (string= type "image")
+			      (image-type-available-p image-subtype))
+			 (insert-image (create-image (encode-coding-string data 'no-conversion) image-subtype t))
+		       (insert "<binary data>"))))))))
 	   bucket
 	   encoding
 	   path-segments)))
