@@ -109,6 +109,22 @@ CreateBucket documentation.  See:
    :parser #'axe-util--xml-read
    :headers (rassq-delete-all nil `(("x-amz-content-sha256" . ,(axe-api--sigv4-hash ""))))))
 
+(cl-defun axe-s3--put-object (success bucket body content-type &rest path-segments)
+  "Put the contents of an object into S3.
+Calls SUCCESS function on success if BODY is successfully written
+to BUCKET under KEY.  CONTENT-TYPE should be set but is not required."
+  (axe-api-request
+   (format "%s.s3.amazonaws.com" bucket)
+   's3
+   success
+   "PUT"
+   :path-segments path-segments
+   :request-payload body
+   :headers (rassq-delete-all nil `(("Content-Type" . ,content-type)
+				    ("Content-MD5" . ,(base64-encode-string
+						       (secure-hash 'md5 body nil nil t)))
+				    ("x-amz-content-sha256" . ,(axe-api--sigv4-hash body))))))
+
 (cl-defun axe-s3--get-object (success bucket encoding &rest path-segments)
   "Download the contents of object specified by KEY from BUCKET.
 Callback SUCCESS is invoked with the response.  See:
