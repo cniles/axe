@@ -302,24 +302,31 @@ for downloading."
     (apply #'axe-s3--get-object
 	   (cl-function
 	    (lambda (&key response data &allow-other-keys)
-	      (let ((output-buffer
+	      (let* ((object-key (s-join "/" path-segments))
+		    (output-buffer
 		     (get-buffer-create
-		      (format "*axe-s3:%s*" (s-join "/" path-segments)))))
+		      (format "*axe-s3:%s*" object-key))))
 		(with-current-buffer-window
 		 output-buffer
 		 '((display-buffer-reuse-window))
 		 nil
 		 (erase-buffer)
-		 (setq axe-s3-object-bucket bucket)
-		 (setq axe-s3-object-key (s-join "/" path-segments))
-		 (setq axe-s3-object-content-type (request-response-header response "Content-Type"))
-		 (let ((image-subtype (alist-get subtype axe-mime-image-subtype-to-image-symbol nil nil #'string=)))
+		 (let ((image-subtype
+			(alist-get subtype axe-mime-image-subtype-to-image-symbol nil nil #'string=)))
 		   (if (eq 'utf-8 encoding)
-		       (insert data)
+		       (progn
+			 (insert data)
+			 (axe-util--log "foo")
+			 (let ((mode (alist-get (format "\\.%s\\'" (file-name-extension object-key)) auto-mode-alist nil nil #'string=)))
+			   (axe-util--log (format "Enabling %s in %s" mode output-buffer))
+			   (funcall mode)))
 		     (if (and (string= type "image")
 			      (image-type-available-p image-subtype))
 			 (insert-image (create-image (encode-coding-string data 'no-conversion) image-subtype t))
-		       (insert "<binary data>"))))))))
+		       (insert "<binary data>"))))
+		 (setq axe-s3-object-bucket bucket)
+		 (setq axe-s3-object-key object-key)
+		 (setq axe-s3-object-content-type (request-response-header response "Content-Type"))))))
 	   bucket
 	   encoding
 	   path-segments)))
