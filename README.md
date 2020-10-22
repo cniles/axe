@@ -43,7 +43,7 @@ A profile can be set using `axe-profile` (defaults to 'default').
 Keybindings to specific interactive should be implemented by the
 user. There isn't currently a recommended list.
 
-The `axe-buffer-mode` does provide a set of keybindings for dealing
+The `axe-api-response-list-mode` does provide a set of keybindings for dealing
 with API responses.
 
 0. `n`: Request and display the next API response using the next token
@@ -53,11 +53,11 @@ with API responses.
    displayed after a configured delay.
 2. `s`: Stop auto-following.
 
+Additional keybindings may be added by use case.
+
 # Roadmap
 
 - STS API https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html
 - Make requests with assumed role
 - Documentation needs work
-- Read an S3 object to buffer and be able to write it back
-- Write a buffer's contents to an S3 object
 - IAM -- view roles, policies, users, etc.
