@@ -203,10 +203,7 @@ Callback SUCCESS is invoked with the response.  See:
 
 (defun axe-s3-guess-mime-type (file-name)
   "Try to guess the mime type of FILE-NAME."
-  (if-let (extension (if (s-contains-p "." file-name)
-			 (-last-item (s-split "[.]" file-name))
-		       nil))
-      (mimetypes-extension-to-mime extension)))
+  (mimetypes-extension-to-mime (file-name-extension file-name)))
 
 ;;;###autoload
 (defun axe-s3-write-buffer-to-object (bucket key content-type)
