@@ -1,0 +1,45 @@
+* Introduction
+
+Have you ever found yourself mindlessley clicking through the AWS web
+console for the 100th time today to drill into the latest Cloudwatch
+log stream?  Have you ever found yourself downloading a file through
+the AWS CLI, editing it in Emacs, then switching back to the command
+line to re-upload it?  Did you dream of a better way? An Emacs way?
+axe wants to be that better way.
+
+axe is an interface for working with AWS resources that is unashamedly
+inspired my Magit.  axe aspires to provide a frontend alternative to
+the AWS web console and CLI with Emacs-ergonomics for working with the
+many AWS services and their constituent resources.  In doing so, it
+also tries to provide more fluid workflows for many tasks that are
+tediously typed out through the AWS CLI.
+
+A major design decision of axe was whether to implement against the
+AWS CLI, AWS HTTP APIs.  In order to compatability issues with
+CLI versions and dependencies on extra-Emacs utilities, the decision
+to leverage the AWS HTTP APIs was made.  In the future, it may be
+decided to split the AWS API functionality off into its own package to
+provided an independent AWS SDK for elisp.
+
+Many AWS APIs return paged requests, so axe provides a functionality
+for asyncronously querying, formatting and appending the paged
+responses to a tabulated buffer.  ~axe-list-api-results~ allows the
+caller to specify a list format, a function for formatting the result,
+a function for custom key bindings and a function for determining the
+"next token".  This next token can be used to make a request for the
+next page, either automatically (for perhaps tailing a log stream) or
+based on a keybinding.  If necessary, a delay can be specified to stay
+within resource limitations.
+
+axe is independently developed and in no way affiliated with Amazon or
+AWS.  The burden of development and maintenance rests souly on its
+author/maintainer.  Comments, recomendations and criticisms are
+welcome, but please keep them constructive.  This project started
+initially as utilities that were useful for him.
+
+* Installation
+* Usage
+** S3
+** Lambda
+** Cloudwatch Logs
+* Contributing
