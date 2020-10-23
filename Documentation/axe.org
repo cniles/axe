@@ -43,17 +43,58 @@ initially as utilities that were useful for him.
 ** S3
 *** axe-s3-list-buckets
 
-List all buckets for selected current account credentials.  Displays a
-table view displaying each buckets creation date and name.
+Displays a table view of all buckets for the current credentials.
 
 Buffer Keybinds:
 
 ~l~: List all objects contained in the row at current point.
 
 *** axe-s3-create-bucket
+
+Interactive function that creates a bucket, reading the bucket's name
+from the minibuffer.
+
 *** axe-s3-delete-bucket
+
+Interactive function that deletes a bucket, reading the bucket's name
+from the minibuffer.
+
 *** axe-s3-list-objects-v2
+
+Interactive function that lists all the objects in a bucket.  The
+bucket's name is read from the minbuffer.
+
+Buffer Keybinds:
+
+~d~: Display the object in the row at current point in a new window.
+See ~axe-s3-display-object~ for further details.
+
+*** axe-s3-display-object
+
+Interactive function that displays an S3 object.  Reads a bucket name
+and object key from the minbuffer.  Sets buffer local variables
+~axe-s3-object-key~, ~axe-s3-object-bucket~, and
+~axe-s3-object-content-type~.  Uses ~auto-mode-alist~ to try to
+determine a mode based on the objects key.  If the object type an
+image based on the ~Content Type~ header and its type is capable of
+being displayed per ~image-type-available-p~, the data is read and
+rendered.  Any unrecognized binary data is simply shown as ~<binary
+data>~
+
+*** axe-s3-write-buffer-to-object
+
+Write the contents of the current buffer to an object in S3.  The
+object bucket, key and content type are read from the minibuffer.  If
+available, bucket and key are prepopulated from ~axe-s3-object-bucket~
+and ~axe-s3-object-key~.  The content type will be read if it can't be
+guessed by the key's extension or if the buffer local variable
+~axe-s3-object-content-type~ is unset.
+
 *** axe-s3-list-objects-in-bucket-at-point
+
+Convenience function that will call ~axe-s3-list-objects-v2~ using the
+bucket name found under current point.
+
 ** Lambda
 ** Cloudwatch Logs
 * Contributing
