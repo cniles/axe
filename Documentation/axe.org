@@ -37,9 +37,52 @@ author/maintainer.  Comments, recomendations and criticisms are
 welcome, but please keep them constructive.  This project started
 initially as utilities that were useful for him.
 
-* Installation
-* Usage
+* Installation and Configuration
+
+** MELPA
+
+axe is available through MELPA.  Configure MELPA as a repository and
+install its package through the package utility of your choice,
+e.g. ~package.el~, ~Cask~ or ~use-package~.
+
+** Installing from sources
+
+axe uses Cask as a package manager.  You can use it to build a
+multi-file archive to install axe.  You'll still need MELPA configured
+to download and install needed dependencies.
+
+#+BEGIN_SRC bash
+cask package
+emacs --batch --eval '(package-install-file dist/axe-0.0.1.tar)'
+#+END_SRC
+
 ** Configurations
+
+There isn't much to configure.  axe will use the credentials and
+profile information in your AWS ~config~ and ~credentials~ files in
+your ~.aws~ directory.  Otherwise, you can set the variables listed below.
+
+If you frequently switch between several profiles, setting directory
+local variables may be a good option to conveniently make the
+appropirate select the appropriate profile or key/secret pair.
+
+*** Variables
+
+- *axe-profile* -- Specifies the desired credential profile.  Defaults
+  to ~default~.
+
+- *axe-aws-credentials-file* -- Specify to search an alternative
+  ~credentials~ file for.  Assumed role credentials are not yet
+  supported.
+
+- *axe-access-key-id*/*axe-secret-access-key* -- Specifies the access
+  key id and secret access key to use for API requests.  These take
+  precedent over reading the ~credentials~ file.
+
+- *axe-region* -- Specifies the desired region to use for non-global
+  API requests.  Defaults to ~us-east-1~.
+
+* Usage
 ** S3
 *** axe-s3-list-buckets
 
