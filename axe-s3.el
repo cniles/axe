@@ -316,10 +316,11 @@ for downloading."
 		   (if (eq 'utf-8 encoding)
 		       (progn
 			 (insert data)
-			 (axe-util--log "foo")
 			 (let ((mode (alist-get (format "\\.%s\\'" (file-name-extension object-key)) auto-mode-alist nil nil #'string=)))
-			   (axe-util--log (format "Enabling %s in %s" mode output-buffer))
-			   (funcall mode)))
+			   (when mode
+			     (progn
+			       (axe-util--log (format "Enabling %s in %s" mode output-buffer))
+			       (funcall mode)))))
 		     (if (and (string= type "image")
 			      (image-type-available-p image-subtype))
 			 (insert-image (create-image (encode-coding-string data 'no-conversion) image-subtype t))
