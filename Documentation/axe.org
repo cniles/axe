@@ -39,7 +39,21 @@ initially as utilities that were useful for him.
 
 * Installation
 * Usage
+** Configurations
 ** S3
+*** axe-s3-list-buckets
+
+List all buckets for selected current account credentials.  Displays a
+table view displaying each buckets creation date and name.
+
+Buffer Keybinds:
+
+~l~: List all objects contained in the row at current point.
+
+*** axe-s3-create-bucket
+*** axe-s3-delete-bucket
+*** axe-s3-list-objects-v2
+*** axe-s3-list-objects-in-bucket-at-point
 ** Lambda
 ** Cloudwatch Logs
 * Contributing
