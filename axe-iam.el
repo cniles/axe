@@ -52,19 +52,8 @@
   (axe-list-api-results
    #'axe-iam--list-users
    "*axe-iam-users*"
-   (cl-function
-    (lambda (&key data &allow-other-keys)
-      (mapcar
-       (lambda (node)
-	 (let ((member (axe-util--xml-node-to-alist node)))
-	   (list nil (vector
-		      (alist-get 'CreateDate member)
-		      (alist-get 'PasswordLastUsed member "Never")
-		      (list (format "%s" (alist-get 'UserName member)) 'member member)))))
-       (axe-util--search-xml-children 'member data))))
-   [("Creation Date" 20 t)
-    ("Last Login" 20 t)
-    ("User Name" 1 t)]
+   (axe-util--xml-to-table-list 'member 'CreateDate 'PasswordLastUsed 'UserName)
+   [("Creation Date" 20 t) ("Last Login" 20 t) ("User Name" 1 t)]
    nil
    nil
    (cl-function

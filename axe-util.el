@@ -119,5 +119,15 @@ If found, return KEY from that property.  If not, return
   "Hex-encode and return the string STR."
   (mapconcat (lambda (c) (format "%X" c)) str ""))
 
+(defmacro axe-util--xml-to-table-list (root &rest fields)
+  "Create a function that produces a table list of FIELDS from XML tags named ROOT."
+  `(cl-function
+    (lambda (&key data &allow-other-keys)
+      (mapcar
+       (lambda (node)
+	 (let ((elm (axe-util--xml-node-to-alist node)))
+	   (list nil ,(cons 'vector (mapcar (lambda (field) (list 'alist-get field 'elm "")) fields)))))
+       (axe-util--search-xml-children ,root data)))))
+
 (provide 'axe-util)
 ;;; axe-util.el ends here
