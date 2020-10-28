@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simplelist>
+  <simple>
+    <foo>Foo 1</foo>
+    <bar>Bar 1</bar>
+    <baz>Baz 1</baz>
+  </simple>
+  <simple>
+    <foo>Foo 2</foo>
+    <bar>Bar 2</bar>
+    <baz>Baz 2</baz>
+  </simple>
+  <simple>
+    <foo>Foo 3</foo>
+    <baz>Baz 3</baz>
+  </simple>
+</simplelist>
