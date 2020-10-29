@@ -32,7 +32,10 @@
 (require 'a)
 
 (cl-defun axe-iam--list-users (success &key marker max-items path-prefix)
-  "Get list of users in the account and call SUCCESS when done."
+  "Get list of users in the account and call SUCCESS when done.
+MARKER, MAX-ITEMS and PATH-PREFIX correspond to request argument
+descriptions for the AWS IAM ListUsers endpoint:
+`https://docs.aws.amazon.com/IAM/latest/APIReference/API_ListUsers.html'"
   (axe-api-request
    "iam.amazonaws.com" 'iam
    success
@@ -53,7 +56,7 @@
   (axe-list-api-results
    #'axe-iam--list-users
    "*axe-iam-users*"
-   (axe-util--xml-to-table-list 'member 'CreateDate 'PasswordLastUsed 'UserName)
+   (axe-util--xml-to-table-list member CreateDate (PasswordLastUsed :default "Never") (UserName :propertize t))
    [("Creation Date" 20 t) ("Last Login" 20 t) ("User Name" 1 t)]
    nil
    nil

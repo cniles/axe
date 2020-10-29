@@ -29,6 +29,8 @@
 
 (require 'axe)
 (require 'json)
+(require 'dash)
+(require 'a)
 (require 's)
 (require 'cl-lib)
 
@@ -119,15 +121,24 @@ If found, return KEY from that property.  If not, return
   "Hex-encode and return the string STR."
   (mapconcat (lambda (c) (format "%X" c)) str ""))
 
-(defmacro axe-util--xml-to-table-list (root &rest fields)
-  "Create a function that produces a table list of FIELDS from XML tags named ROOT."
+(defun axe-util--xml-expand-list (root field-opt)
+  ""
+  (axe-util--log field-opt)
+  (let* ((field-name (if (consp field-opt) (car field-opt) field-opt))
+	 (opts (if (consp field-opt) (apply #'a-list (cdr field-opt)) nil))
+	 (get-list (list 'alist-get (list 'quote field-name) 'elm (or (alist-get :default opts) ""))))
+    (if (alist-get :propertize opts) (list 'list get-list (list 'quote root) 'elm)
+      get-list)))
+
+(defmacro axe-util--xml-to-table-list (root &rest field-opts)
+  "Create a function that produces a table list using FIELD-OPTS from XML tags named ROOT."
   `(cl-function
     (lambda (&key data &allow-other-keys)
       (mapcar
        (lambda (node)
 	 (let ((elm (axe-util--xml-node-to-alist node)))
-	   (list nil ,(cons 'vector (mapcar (lambda (field) (list 'alist-get field 'elm "")) fields)))))
-       (axe-util--search-xml-children ,root data)))))
+	   (list nil ,(cons 'vector (mapcar (-partial #'axe-util--xml-expand-list root) field-opts)))))
+       (axe-util--search-xml-children (quote ,root) data)))))
 
 (provide 'axe-util)
 ;;; axe-util.el ends here
