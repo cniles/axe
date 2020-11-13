@@ -10,6 +10,7 @@
 (depends-on "xmlgen")
 (depends-on "dash")
 (depends-on "s")
+(depends-on "mimetypes")
 
 (development
  (depends-on "package-lint")
