@@ -95,12 +95,12 @@ AWS API params."
 			   (cons "startTime" start-time)))))
 
 ;;;###autoload
-(defun axe-logs-describe-log-groups (prefix)
+(cl-defun axe-logs-describe-log-groups (prefix &key (auto-follow t))
   "Opens a new buffer and displays all log groups.
 If PREFIX is not nil, it is used to filter by log group name
 prefix.  May result in multiple API calls.  If that is the case
 then subsequent results may take some time to load and
-displayed."
+displayed.  AUTO-FOLLOW can be used to control the auto-follow behaviour."
   (interactive "sPrefix: ")
   (let ((prefix (if (equal "" prefix) nil prefix))
 	(limit ()))
@@ -121,11 +121,41 @@ displayed."
      (list :prefix prefix :limit limit)
      (lambda (map)
        (define-key map (kbd "l") #'axe-logs-latest-log-stream-near-point)
+       (define-key map (kbd "<C-return>") #'axe-logs-log-streams-near-point)
        map)
      (cl-function (lambda (&key data &allow-other-keys)
 		    (alist-get 'nextToken data)))
-     :auto-follow t
+     :auto-follow auto-follow
      :auto-follow-delay 0.1)))
+
+;;;###autoload
+(cl-defun axe-logs-describe-log-streams (log-group-name &key auto-follow (auto-follow-delay 30.0))
+  "Opens a new buffer and displays all log groups for LOG-GROUP-NAME.
+AUTO-FOLLOW and AUTO-FOLLOW-DELAY can
+be used to control the auto-follow behaviour."
+  (interactive "sLog Group Name: ")
+  (axe-list-api-results
+   #'axe-logs--describe-log-streams
+   (format "*axe-log-stream:%s*" log-group-name)
+   (cl-function
+    (lambda (&key data &allow-other-keys)
+      (mapcar
+       (lambda (log-stream)
+	 (list nil
+	       (vector
+		(format-time-string "%F %T" (seconds-to-time (/ (alist-get 'creationTime log-stream) 1000)))
+		(file-size-human-readable (alist-get 'storedBytes log-stream))
+		(list (format "%s" (alist-get 'logStreamName log-stream)) 'log-stream log-stream 'log-group-name log-group-name))))
+       (alist-get 'logStreams data))))
+   [("Creation" 20 t) ("Size" 8 t) ("Name" 1 t)]
+   (list log-group-name)
+   (lambda (map)
+     (define-key map (kbd "<C-return>") #'axe-logs-log-stream-near-point)
+     map)
+   (cl-function (lambda (&key data &allow-other-keys)
+                  (alist-get 'nextToken data)))
+   :auto-follow auto-follow
+   :auto-follow-delay auto-follow-delay))
 
 ;;;###autoload
 (cl-defun axe-logs-get-log-events (log-group-name log-stream-name &key auto-follow (auto-follow-delay 5.0))
@@ -172,6 +202,27 @@ otherwise uses the text at point in the buffer."
      :limit 1
      :descending t
      :order-by "LastEventTime")))
+
+;;;###autoload
+(defun axe-logs-log-stream-near-point ()
+  "Open the log stream defined near the current point.
+First checks for text property log-group-name on the line at point
+otherwise uses the text at point in the buffer.  Then checks for text
+property log-stream on the line at point
+otherwise uses the text at point in the buffer."
+  (interactive)
+  (let ((log-group-name (axe-util--search-line-for-property 'log-group-name))
+        (log-stream-name (axe-util--thing-or-property-near-point 'log-stream 'logStreamName)))
+	(axe-logs-get-log-events log-group-name log-stream-name)))
+
+;;;###autoload
+(defun axe-logs-log-streams-near-point ()
+  "Open the log streams defined near the current point.
+First checks for text property log-group on the line at point
+otherwise uses the text at point in the buffer."
+  (interactive)
+  (let ((log-group-name (axe-util--thing-or-property-near-point 'log-group 'logGroupName)))
+	(axe-logs-describe-log-streams log-group-name)))
 
 (provide 'axe-logs)
 ;;; axe-logs.el ends here
