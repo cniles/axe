@@ -95,12 +95,12 @@ AWS API params."
 			   (cons "startTime" start-time)))))
 
 ;;;###autoload
-(cl-defun axe-logs-describe-log-groups (prefix &key (auto-follow t))
+(defun axe-logs-describe-log-groups (prefix)
   "Opens a new buffer and displays all log groups.
 If PREFIX is not nil, it is used to filter by log group name
 prefix.  May result in multiple API calls.  If that is the case
 then subsequent results may take some time to load and
-displayed.  AUTO-FOLLOW can be used to control the auto-follow behaviour."
+displayed."
   (interactive "sPrefix: ")
   (let ((prefix (if (equal "" prefix) nil prefix))
 	(limit ()))
@@ -124,7 +124,7 @@ displayed.  AUTO-FOLLOW can be used to control the auto-follow behaviour."
        map)
      (cl-function (lambda (&key data &allow-other-keys)
 		    (alist-get 'nextToken data)))
-     :auto-follow auto-follow
+     :auto-follow t
      :auto-follow-delay 0.1)))
 
 ;;;###autoload
