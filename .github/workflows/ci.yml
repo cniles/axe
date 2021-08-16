@@ -1,0 +1,25 @@
+name: AXE CI
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+
+    - uses: purcell/setup-emacs@master
+      with:
+        version: 27.1  
+
+    - uses: conao3/setup-cask@master
+      with:
+        version: '0.8.7'
+
+    - run: make test
+
+    - run: make lint

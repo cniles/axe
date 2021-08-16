@@ -1,6 +1,7 @@
 INIT_PACKAGE_EL="(progn \
   (require 'package)
   (push '(\"melpa\" . \"https://melpa.org/packages/\") package-archives) \
+  (push '(\"gnu\" . \"http://elpa.gnu.org/packages/\") package-archives) \
   (package-initialize) \
   (package-refresh-contents))"
 
