@@ -1,6 +1,4 @@
-[![MELPA](https://melpa.org/packages/axe-badge.svg)](https://melpa.org/#/axe)
-
-[![Test & Lint](https://github.com/cniles/axe/actions/workflows/ci.yml/badge.svg)](https://github.com/cniles/axe/actions)
+[![Test & Lint](https://github.com/cniles/axe/actions/workflows/ci.yml/badge.svg)](https://github.com/cniles/axe/actions) [![MELPA](https://melpa.org/packages/axe-badge.svg)](https://melpa.org/#/axe)
 
 # axe
 
