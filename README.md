@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/cniles/axe.svg?branch=master)](https://travis-ci.org/cniles/axe) [![MELPA](https://melpa.org/packages/axe-badge.svg)](https://melpa.org/#/axe)
+[![MELPA](https://melpa.org/packages/axe-badge.svg)](https://melpa.org/#/axe)
+![Test & Lint](https://github.com/cniles/axe/workflows/ci.yml/badge.svg)
 
 # axe
 
