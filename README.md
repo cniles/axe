@@ -30,7 +30,7 @@ possibly cause some heartburn with future changes.
 
 # Setup
 
-The variables `aws-access-key-id` and `aws-secret-access-key` can be
+The variables `axe-access-key-id` and `axe-secret-access-key` can be
 defined to set access key id and secret access key.  If not specified,
 these values will be read from the AWS credential file set to
 `aws-credential-file`, which defaults to the
