@@ -333,7 +333,7 @@ for downloading."
 	   path-segments)))
 
 ;;;###autoload
-(defun axe-s3-display-object (bucket &rest path-segments)
+(defun axe-s3-display-object (bucket path-segments)
   "Download and display an S3 object in BUCKET whose key is made up of PATH-SEGMENTS."
   (interactive
    (list
