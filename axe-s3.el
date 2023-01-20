@@ -66,7 +66,7 @@ its key.")
 (defun axe-s3--list-buckets (success)
   "Get buckets in the account and call SUCCESS when done."
   (axe-api-request
-   "s3.amazonaws.com" 's3
+   (axe-api-domain 's3 axe-region) 's3
    success
    "GET"
    :parser #'axe-util--xml-read
@@ -79,7 +79,7 @@ MAX-KEYS, FETCH-OWNER, PREFIX, START-AFTER and REQUEST-PAYER
 correspond to AWS API parameters.  NEXT-TOKEN corresponds to the
 `continuation-token' request parameter."
   (axe-api-request
-   (format "%s.s3.amazonaws.com" bucket) 's3
+   (format "%s.s3.%s.amazonaws.com" bucket axe-region) 's3
    success
    "GET"
    :parser #'axe-util--xml-read
@@ -106,7 +106,7 @@ CreateBucket documentation.  See:
 							 (LocationConstraint location-constraint)))
 		   "")))
     (axe-api-request
-     (format "%s.s3.amazonaws.com" bucket)
+     (format "%s.s3.%s.amazonaws.com" bucket axe-region)
      's3
      success
      "PUT"
@@ -130,7 +130,7 @@ LOCATION-CONSTRAINT parameters behave as described in API
 CreateBucket documentation.  See:
 `https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html'"
   (axe-api-request
-   (format "%s.s3.amazonaws.com" bucket)
+   (format "%s.s3.%s.amazonaws.com" bucket axe-region)
    's3
    success
    "DELETE"
@@ -142,7 +142,7 @@ CreateBucket documentation.  See:
 Calls SUCCESS function on success if BODY is successfully written
 to BUCKET under KEY.  CONTENT-TYPE should be set but is not required."
   (axe-api-request
-   (format "%s.s3.amazonaws.com" bucket)
+   (format "%s.s3.%s.amazonaws.com" bucket axe-region)
    's3
    success
    "PUT"
@@ -158,7 +158,7 @@ to BUCKET under KEY.  CONTENT-TYPE should be set but is not required."
 Callback SUCCESS is invoked with the response.  See:
 `https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html'"
   (axe-api-request
-   (format "%s.s3.amazonaws.com" bucket)
+   (format "%s.s3.%s.amazonaws.com" bucket axe-region)
    's3
    success
    "GET"
@@ -171,7 +171,7 @@ Callback SUCCESS is invoked with the response.  See:
 Callback SUCCESS is invoked with the response.  See:
 `https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html'"
   (axe-api-request
-   (format "%s.s3.amazonaws.com" bucket)
+   (format "%s.s3.%s.amazonaws.com" bucket axe-region)
    's3
    success
    "GET"
